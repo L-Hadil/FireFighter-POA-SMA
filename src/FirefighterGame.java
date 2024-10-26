@@ -4,24 +4,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class FirefighterGame extends JPanel {
-    private static final int GRID_SIZE = 10; // Taille de la grille (10x10)
-    private static final int OBJECTIVES_COUNT = 2; // Nombre de cases d'objectif
-    private static final int CELL_SIZE = 50; // Taille de chaque cellule
-    private final Grid grid; // Instance de la classe Grid
-    private final FirefighterAgent firefighterAgent; // Instance de FirefighterAgent
-    private final FireAgent fireAgent; // Instance de FireAgent
-    private boolean gameOver = false; // État du jeu
-    private String winnerMessage = ""; // Message de fin de jeu
+    private static final int GRID_SIZE = 10;
+    private static final int OBJECTIVES_COUNT = 4;
+    private static final int CELL_SIZE = 50;
+    private final Grid grid;
+    private final FirefighterAgent firefighterAgent;
+    private final FireAgent fireAgent;
+    private boolean gameOver = false;
+    private String winnerMessage = "";
 
     public FirefighterGame() {
         setPreferredSize(new Dimension(GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE + 50));
         grid = new Grid(GRID_SIZE, OBJECTIVES_COUNT);
 
-        // Initialisation des agents avec OBJECTIVES_COUNT
         fireAgent = new FireAgent((int) (Math.random() * GRID_SIZE), (int) (Math.random() * GRID_SIZE), grid, OBJECTIVES_COUNT);
         firefighterAgent = new FirefighterAgent(GRID_SIZE / 2, GRID_SIZE / 2, grid, OBJECTIVES_COUNT);
     }
-
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -38,7 +36,7 @@ public class FirefighterGame extends JPanel {
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
                 if (grid.isFireAt(i, j)) {
-                    g.setColor(new Color(255, 150, 150)); // Rouge clair pour les cases brûlées
+                    g.setColor(new Color(255, 150, 150)); // Rouge clair pour les cases en feu
                 } else if (grid.isSafeAt(i, j)) {
                     g.setColor(Color.CYAN); // Cyan pour les cases sécurisées
                 } else if (grid.isBarrierAt(i, j)) {
@@ -52,6 +50,7 @@ public class FirefighterGame extends JPanel {
             }
         }
     }
+
 
     private void drawFirefighter(Graphics g) {
         g.setColor(Color.BLUE);
@@ -76,15 +75,13 @@ public class FirefighterGame extends JPanel {
         g.drawString("Feu Score: " + fireAgent.getScore(), 150, GRID_SIZE * CELL_SIZE + 20);
     }
 
-
     private void drawGameOverMessage(Graphics g) {
         g.setColor(Color.BLACK);
         g.drawString(winnerMessage, 300, GRID_SIZE * CELL_SIZE + 20);
     }
 
     private void checkGameOver() {
-        // Vérification si tous les objectifs sont épuisés
-        if (!grid.hasObjectives()) {
+        if (!grid.hasObjectives()) { // Vérification si tous les objectifs sont atteints ou brûlés
             gameOver = true;
             int firefighterScore = firefighterAgent.getScore();
             int fireScore = fireAgent.getScore();
@@ -96,9 +93,14 @@ public class FirefighterGame extends JPanel {
             } else {
                 winnerMessage = "Match nul ! Les scores sont égaux : " + firefighterScore;
             }
+
             System.out.println(winnerMessage);
+
+            // Afficher une boîte de dialogue avec le message du gagnant
+            JOptionPane.showMessageDialog(this, winnerMessage, "Résultat de la Partie", JOptionPane.INFORMATION_MESSAGE);
         }
     }
+
 
     public void playGame() {
         JFrame frame = new JFrame("Firefighter Game");
@@ -108,13 +110,22 @@ public class FirefighterGame extends JPanel {
         frame.setVisible(true);
 
         Timer timer = new Timer(1000, new ActionListener() {
+            int turn = 1;
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gameOver) {
-                    fireAgent.move(); // Déplacer le feu
-                    firefighterAgent.move(); // Déplacer le pompier
-                    checkGameOver(); // Vérifier si le jeu est terminé
-                    repaint(); // Redessiner la grille après chaque tour
+                    System.out.println("== Tour " + turn + " ==");
+
+                    firefighterAgent.move();
+                    System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
+
+                    fireAgent.move();
+                    System.out.println("Feu : Score actuel = " + fireAgent.getScore());
+
+                    checkGameOver();
+                    repaint();
+                    turn++;
                 }
             }
         });
