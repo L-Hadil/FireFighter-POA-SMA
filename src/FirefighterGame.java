@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 
 public class FirefighterGame extends JPanel {
     private static final int GRID_SIZE = 10;
-    private static final int OBJECTIVES_COUNT = 4;
+    private static final int OBJECTIVES_COUNT = 10;
     private static final int CELL_SIZE = 50;
     private final Grid grid;
     private final FirefighterAgent firefighterAgent;
@@ -81,25 +81,33 @@ public class FirefighterGame extends JPanel {
     }
 
     private void checkGameOver() {
-        if (!grid.hasObjectives()) { // Vérification si tous les objectifs sont atteints ou brûlés
-            gameOver = true;
-            int firefighterScore = firefighterAgent.getScore();
-            int fireScore = fireAgent.getScore();
+        // Vérifiez que le dernier mouvement a bien été effectué avant de terminer le jeu
+        SwingUtilities.invokeLater(() -> {
+            if (grid.getObjectives().isEmpty()) {  // Vérifie que tous les objectifs sont atteints
+                gameOver = true;
+                int firefighterScore = firefighterAgent.getScore();
+                int fireScore = fireAgent.getScore();
 
-            if (firefighterScore > fireScore) {
-                winnerMessage = "Victoire du pompier ! Objectifs protégés : " + firefighterScore;
-            } else if (fireScore > firefighterScore) {
-                winnerMessage = "Victoire du feu ! Objectifs brûlés : " + fireScore;
-            } else {
-                winnerMessage = "Match nul ! Les scores sont égaux : " + firefighterScore;
+                if (firefighterScore > fireScore) {
+                    winnerMessage = "Victoire du pompier ! Objectifs protégés : " + firefighterScore;
+                } else if (fireScore > firefighterScore) {
+                    winnerMessage = "Victoire du feu ! Objectifs brûlés : " + fireScore;
+                } else {
+                    winnerMessage = "Match nul ! Les scores sont égaux : " + firefighterScore;
+                }
+
+                System.out.println(winnerMessage);
+                JOptionPane.showMessageDialog(this, winnerMessage, "Résultat de la Partie", JOptionPane.INFORMATION_MESSAGE);
             }
-
-            System.out.println(winnerMessage);
-
-            // Afficher une boîte de dialogue avec le message du gagnant
-            JOptionPane.showMessageDialog(this, winnerMessage, "Résultat de la Partie", JOptionPane.INFORMATION_MESSAGE);
-        }
+        });
     }
+
+
+
+
+
+
+
 
 
     public void playGame() {
