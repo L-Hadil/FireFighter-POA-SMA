@@ -2,9 +2,9 @@ import java.util.List;
 
 public class FireAgent extends Agent {
     private final Grid grid;
-    private final int objectivesCount; // Total number of objectives
+    private final int objectivesCount;
     private Direction fireDirection;
-    private int score; // Fire's score
+    private int score;
 
     public FireAgent(int startX, int startY, Grid grid, int objectivesCount) {
         super(startX, startY);

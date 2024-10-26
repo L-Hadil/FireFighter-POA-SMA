@@ -4,9 +4,9 @@ import java.util.Random;
 public class Grid {
     private final int gridSize;
     private final boolean[][] fireGrid;    // Grille des incendies
-    private final boolean[][] safeGrid;     // Grille des cases sécurisées
-    private final boolean[][] barrierGrid;  // Grille des barrières
-    private final List<int[]> objectives;   // Liste des objectifs
+    private final boolean[][] safeGrid;     // Grille des cases sécurisées(par le pompier donc le bleu clair)
+    private final boolean[][] barrierGrid;  // Grille des barrières(les cases grise)
+    private final List<int[]> objectives;   // Liste des objectifs(les cases vertes)
     private final Random random;
 
     public Grid(int size, int objectivesCount) {
@@ -26,7 +26,7 @@ public class Grid {
     }
 
     private void initializeBarriers() {
-        for (int i = 0; i < 5; i++) { // Exemple pour placer 5 barrières
+        for (int i = 0; i < 5; i++) {
             int barrierX = random.nextInt(gridSize);
             int barrierY = random.nextInt(gridSize);
             barrierGrid[barrierX][barrierY] = true;
