@@ -1,83 +1,81 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-
 public class Grid {
-    private char[][] grid;
-    private int rows;
-    private int cols;
-    private Random random = new Random();
+    private final int gridSize;
+    private final boolean[][] fireGrid;    // Grille des incendies
+    private final boolean[][] safeGrid;     // Grille des cases sécurisées
+    private final boolean[][] barrierGrid;  // Grille des barrières
+    private final List<int[]> objectives;   // Liste des objectifs
+    private final Random random;
 
-    // Constructeur pour initialiser la grille avec des dimensions données
-    public Grid(int rows, int cols) {
-        this.rows = rows;
-        this.cols = cols;
-        grid = new char[rows][cols];
+    public Grid(int size, int objectivesCount) {
+        this.gridSize = size;
+        this.fireGrid = new boolean[size][size];
+        this.safeGrid = new boolean[size][size];
+        this.barrierGrid = new boolean[size][size];
+        this.objectives = new ArrayList<>();
+        this.random = new Random();
 
-        // Initialisation de la grille avec des cases vides
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                grid[i][j] = '.';  // '.' représente une case vide
+        initializeBarriers();
+        initializeObjectives(objectivesCount);
+    }
+
+    public int getGridSize() {
+        return gridSize; // Return the grid size
+    }
+
+    private void initializeBarriers() {
+        for (int i = 0; i < 5; i++) { // Exemple pour placer 5 barrières
+            int barrierX = random.nextInt(gridSize);
+            int barrierY = random.nextInt(gridSize);
+            barrierGrid[barrierX][barrierY] = true;
+            System.out.println("Barrière placée à la position (" + barrierX + ", " + barrierY + ")");
+        }
+    }
+
+    private void initializeObjectives(int count) {
+        for (int i = 0; i < count; i++) {
+            int objX = random.nextInt(gridSize);
+            int objY = random.nextInt(gridSize);
+            while (barrierGrid[objX][objY] || fireGrid[objX][objY]) {
+                objX = random.nextInt(gridSize);
+                objY = random.nextInt(gridSize);
             }
-        }
-
-        // Ajouter des feux et des bâtiments de manière aléatoire
-        addRandomFires(5);  // Ajouter 5 feux au départ
-        addRandomBuildings(3);  // Ajouter 3 bâtiments
-    }
-
-    // Méthode pour récupérer l'état d'une case spécifique
-    public char getState(int row, int col) {
-        return grid[row][col];
-    }
-
-    // Méthode pour ajouter des feux aléatoires dans la grille
-    public void addRandomFires(int numberOfFires) {
-        for (int i = 0; i < numberOfFires; i++) {
-            int x = random.nextInt(rows);
-            int y = random.nextInt(cols);
-            grid[x][y] = 'F';  // 'F' pour feu
+            objectives.add(new int[]{objX, objY});
+            System.out.println("Objectif placé à la position (" + objX + ", " + objY + ")");
         }
     }
 
-    // Méthode pour ajouter des bâtiments aléatoires dans la grille
-    public void addRandomBuildings(int numberOfBuildings) {
-        for (int i = 0; i < numberOfBuildings; i++) {
-            int x = random.nextInt(rows);
-            int y = random.nextInt(cols);
-            grid[x][y] = 'B';  // 'B' pour bâtiment
-        }
+    public boolean isFireAt(int x, int y) {
+        return fireGrid[x][y];
     }
 
-    // Méthode pour propager le feu
-    public void propagateFire() {
-        char[][] newGrid = new char[rows][cols];  // Une copie temporaire de la grille pour mettre à jour
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                newGrid[i][j] = grid[i][j];  // Copier l'état actuel
-            }
-        }
-
-        // Parcourir la grille et propager le feu aux cases adjacentes
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (grid[i][j] == 'F') {  // Si la case est en feu
-                    spreadFire(i - 1, j, newGrid);  // Haut
-                    spreadFire(i + 1, j, newGrid);  // Bas
-                    spreadFire(i, j - 1, newGrid);  // Gauche
-                    spreadFire(i, j + 1, newGrid);  // Droite
-                }
-            }
-        }
-
-        // Mettre à jour la grille avec les nouveaux feux
-        grid = newGrid;
+    public void setFireAt(int x, int y, boolean onFire) {
+        fireGrid[x][y] = onFire;
     }
 
-    // Méthode pour propager le feu sur une case spécifique
-    private void spreadFire(int x, int y, char[][] newGrid) {
-        if (x >= 0 && x < rows && y >= 0 && y < cols) {
-            if (grid[x][y] == '.' || grid[x][y] == 'B') {  // Le feu peut se propager sur une case vide ou un bâtiment
-                newGrid[x][y] = 'F';  // Mettre le feu à cette case
-            }
-        }
+    public boolean isSafeAt(int x, int y) {
+        return safeGrid[x][y];
+    }
+
+    public void setSafeAt(int x, int y) {
+        safeGrid[x][y] = true;
+    }
+
+    public boolean isBarrierAt(int x, int y) {
+        return barrierGrid[x][y];
+    }
+
+    public List<int[]> getObjectives() {
+        return objectives;
+    }
+
+    public void removeObjective(int x, int y) {
+        objectives.removeIf(obj -> obj[0] == x && obj[1] == y);
+    }
+
+    public boolean hasObjectives() {
+        return !objectives.isEmpty();
     }
 }
