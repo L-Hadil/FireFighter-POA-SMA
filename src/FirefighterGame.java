@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 
 public class FirefighterGame extends JPanel {
     private static final int GRID_SIZE = 10;
-    private static final int OBJECTIVES_COUNT = 10;
+    private static final int OBJECTIVES_COUNT = 5;
     private static final int CELL_SIZE = 50;
     private final Grid grid;
     private final FirefighterAgent firefighterAgent;
@@ -101,12 +101,6 @@ public class FirefighterGame extends JPanel {
             }
         });
     }
-
-
-
-
-
-
 
 
 
