@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 
 public class FirefighterGame extends JPanel {
     private static final int GRID_SIZE = 10;
-    private static final int OBJECTIVES_COUNT = 5;
+    private static final int OBJECTIVES_COUNT = 10;
     private static final int CELL_SIZE = 50;
     private final Grid grid;
     private final FirefighterAgent firefighterAgent;
@@ -113,21 +113,25 @@ public class FirefighterGame extends JPanel {
 
         Timer timer = new Timer(1000, new ActionListener() {
             int turn = 1;
+            boolean isFirefightersTurn = true;  // Variable pour suivre le tour
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gameOver) {
                     System.out.println("== Tour " + turn + " ==");
 
-                    firefighterAgent.move();
-                    System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
-
-                    fireAgent.move();
-                    System.out.println("Feu : Score actuel = " + fireAgent.getScore());
+                    if (isFirefightersTurn) {
+                        firefighterAgent.move();
+                        System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
+                    } else {
+                        fireAgent.move();
+                        System.out.println("Feu : Score actuel = " + fireAgent.getScore());
+                        turn++;  // Augmente le tour seulement après les deux mouvements
+                    }
 
                     checkGameOver();
                     repaint();
-                    turn++;
+                    isFirefightersTurn = !isFirefightersTurn;  // Alterne le tour
                 }
             }
         });
