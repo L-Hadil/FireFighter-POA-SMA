@@ -8,29 +8,61 @@ import java.io.IOException;
 
 public class FirefighterGame extends JPanel {
     private static final int GRID_SIZE = 10;
-    private static final int OBJECTIVES_COUNT = 4;
+    private static final int OBJECTIVES_COUNT = 9;
     private static final int CELL_SIZE = 50;
     private final Grid grid;
     private final FirefighterAgent firefighterAgent;
     private final FireAgent fireAgent;
     private boolean gameOver = false;
     private String winnerMessage = "";
-
     private final Image fireIcon;
     private final Image firefighterIcon;
+    private final Image barrierIcon;
     private boolean fireAgentTurn = true; // Boolean to alternate turns
+    private final Image humanIcon;
+    private int roundsCounter = 0;
+    private final int roundsUntilHumanAppears;
+    private int humanX = -1;
+    private int humanY = -1;
+    private boolean humanAppeared = false;
+    private int roundsSinceHumanMoved = 0;
+
+
 
     public FirefighterGame() {
         setPreferredSize(new Dimension(GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE + 50));
         grid = new Grid(GRID_SIZE, OBJECTIVES_COUNT);
 
-        fireAgent = new FireAgent((int) (Math.random() * GRID_SIZE), (int) (Math.random() * GRID_SIZE), grid, OBJECTIVES_COUNT);
-        firefighterAgent = new FirefighterAgent(GRID_SIZE / 2, GRID_SIZE / 2, grid, OBJECTIVES_COUNT);
+        roundsUntilHumanAppears = 1 + (int) (Math.random() * 9);
+
+        // Ensure FireAgent starts in an empty cell
+        int fireX, fireY;
+        do {
+            fireX = (int) (Math.random() * GRID_SIZE);
+            fireY = (int) (Math.random() * GRID_SIZE);
+        } while (grid.isObjectiveAt(fireX, fireY) || grid.isBarrierAt(fireX, fireY));
+
+        fireAgent = new FireAgent(fireX, fireY, grid, OBJECTIVES_COUNT);
+
+        // Ensure FirefighterAgent starts in an empty cell
+        int firefighterX, firefighterY;
+        do {
+            firefighterX = (int) (Math.random() * GRID_SIZE/3);
+            firefighterY = (int) (Math.random() * GRID_SIZE);
+        } while ((firefighterX == fireX && firefighterY == fireY) ||
+                grid.isObjectiveAt(firefighterX, firefighterY) ||
+                grid.isBarrierAt(firefighterX, firefighterY));
+
+        firefighterAgent = new FirefighterAgent(firefighterX, firefighterY, grid, OBJECTIVES_COUNT);
 
         // Load icons
-        fireIcon = new ImageIcon("images/img_3.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
-        firefighterIcon = new ImageIcon("images/img_1.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+        fireIcon = new ImageIcon("assets/icons/img_3.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+        firefighterIcon = new ImageIcon("assets/icons/img_1.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+        barrierIcon = new ImageIcon("assets/icons/img_5.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+        humanIcon = new ImageIcon("assets/icons/img_8.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -39,7 +71,9 @@ public class FirefighterGame extends JPanel {
         drawFirefighter(g);
         drawFire(g);
         drawObjectives(g);
+        drawBarriers(g);
         drawScores(g);
+        drawHuman(g);
         if (gameOver) drawGameOverMessage(g);
     }
 
@@ -50,8 +84,6 @@ public class FirefighterGame extends JPanel {
                     g.setColor(new Color(255, 150, 150)); // Light red for burning cells
                 } else if (grid.isSafeAt(i, j)) {
                     g.setColor(Color.CYAN); // Cyan for safe cells
-                } else if (grid.isBarrierAt(i, j)) {
-                    g.setColor(Color.GRAY); // Gray for barriers
                 } else {
                     g.setColor(Color.WHITE); // White for empty cells
                 }
@@ -72,12 +104,17 @@ public class FirefighterGame extends JPanel {
 
     private void drawObjectives(Graphics g) {
         try {
-            Image greenIcon = ImageIO.read(new File("images/img_4.png"));
+            Image greenIcon = ImageIO.read(new File("assets/icons/img_4.png"));
             for (int[] obj : grid.getObjectives()) {
                 g.drawImage(greenIcon, obj[0] * CELL_SIZE, obj[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    private void drawBarriers(Graphics g) {
+        for (int[] obj : grid.getBarriers()) {
+            g.drawImage(barrierIcon, obj[0] * CELL_SIZE, obj[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);
         }
     }
 
@@ -92,23 +129,46 @@ public class FirefighterGame extends JPanel {
         g.drawString(winnerMessage, 300, GRID_SIZE * CELL_SIZE + 20);
     }
 
+    private void drawHuman(Graphics g) {
+        if (humanAppeared) {
+            g.drawImage(humanIcon, humanX * CELL_SIZE, humanY * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);
+        }
+    }
+
+
     private void checkGameOver() {
-        if (!grid.hasObjectives()) {
+        if (!grid.hasObjectives()) { // No objectives left
             gameOver = true;
+
             int firefighterScore = firefighterAgent.getScore();
             int fireScore = fireAgent.getScore();
 
             if (firefighterScore > fireScore) {
-                winnerMessage = "Victoire du pompier ! Objectifs protégés : " + firefighterScore;
+                winnerMessage = "Victory for the Firefighter! Protected objectives: " + firefighterScore;
             } else if (fireScore > firefighterScore) {
-                winnerMessage = "Victoire du feu ! Objectifs brûlés : " + fireScore;
+                winnerMessage = "Victory for the Fire! Burned objectives: " + fireScore;
             } else {
-                winnerMessage = "Match nul ! Les scores sont égaux : " + firefighterScore;
+                winnerMessage = "It's a tie! Scores are equal: " + firefighterScore;
             }
 
-            JOptionPane.showMessageDialog(this, winnerMessage, "Résultat de la Partie", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
         }
+
+        // Optional: Check if a special condition (e.g., reaching the human) ends the game
+        if ((firefighterAgent.getX() == humanX && firefighterAgent.getY() == humanY)) {
+            gameOver = true;
+            winnerMessage = "Victory for the Firefighter! Reached the human!";
+            JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        } else if ((fireAgent.getX() == humanX && fireAgent.getY() == humanY)) {
+            gameOver = true;
+            winnerMessage = "Victory for the Fire! Reached the human!";
+            JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+
     }
+
+
 
     public void playGame() {
         JFrame frame = new JFrame("Firefighter Game");
@@ -121,23 +181,56 @@ public class FirefighterGame extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gameOver) {
-                    if (fireAgentTurn) {
-                        fireAgent.move();
-                        System.out.println("--------------Fire Agent Turn");
-                        System.out.println("Feu : Score actuel = " + fireAgent.getScore());
-                    } else {
-                        System.out.println("//////////////Fire Fighter Agent Turn");
-                        firefighterAgent.move();
-                        System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
+                    roundsCounter++;
+                    roundsSinceHumanMoved++;  // Increment the round counter for human movement
+
+                    // Check if it's time to add the human icon
+                    if (!humanAppeared && roundsCounter >= roundsUntilHumanAppears) {
+                        placeHumanInEmptyCell();  // Place human in an empty cell
+                        humanAppeared = true;
                     }
-                    checkGameOver();
-                    repaint();
-                    fireAgentTurn = !fireAgentTurn;
+
+                    // Every 2 rounds, move the human to another empty cell
+                    if (roundsSinceHumanMoved >= 6 && humanAppeared) {
+                       placeHumanInEmptyCell();  // Place human in a new empty cell
+                        roundsSinceHumanMoved = 0;  // Reset the counter
+                    }
+
+
+                    if (!gameOver) {
+                        if (fireAgentTurn) {
+                            fireAgent.move();
+                            System.out.println("--------------Fire Agent Turn");
+                            System.out.println("Feu : Score actuel = " + fireAgent.getScore());
+                        } else {
+                            System.out.println("//////////////Fire Fighter Agent Turn");
+                            firefighterAgent.move();
+                            System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
+                        }
+
+                        checkGameOver();
+                        repaint();
+                        fireAgentTurn = !fireAgentTurn;
+                    }
                 }
             }
         });
         timer.start();
     }
+
+    // Method to place the human in an empty cell
+    private void placeHumanInEmptyCell() {
+        do {
+            humanX = (int) (Math.random() * GRID_SIZE);
+            humanY = (int) (Math.random() * GRID_SIZE);
+        } while (grid.isObjectiveAt(humanX, humanY) ||
+                grid.isBarrierAt(humanX, humanY) ||
+                grid.isFireAt(humanX, humanY) || grid.isSafeAt(humanX, humanY)||
+                (humanX == fireAgent.getX() && humanY == fireAgent.getY()) ||
+                (humanX == firefighterAgent.getX() && humanY == firefighterAgent.getY()));
+    }
+
+
 
     public static void main(String[] args) {
         FirefighterGame game = new FirefighterGame();
