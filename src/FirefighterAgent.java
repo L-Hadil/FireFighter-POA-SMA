@@ -7,43 +7,76 @@ public class FirefighterAgent extends Agent {
     private int score;
 
     public FirefighterAgent(int startX, int startY, Grid grid, int objectivesCount) {
-        super(startX, startY);
+        super(startX, startY, grid); // Passe Grid au parent
         this.grid = grid;
         this.objectives = grid.getObjectives();
         this.objectivesCount = objectivesCount;
         this.score = 0;
-        // Check if the starting cell is empty, if not reset position
+        // Réinitialise si la position initiale est invalide
         if (!isStartingCellEmpty(startX, startY)) {
-            System.out.println("Starting cell (" + startX + ", " + startY + ") is not empty. Resetting position.");
-            resetStartingPosition();  // Reset to a valid position
+            resetStartingPosition();
         }
     }
 
 
+    // Méthode pour vérifier si la cellule de départ est vide
+    private boolean isStartingCellEmpty(int x, int y) {
+        return grid.isInBounds(x, y) && !grid.isFireAt(x, y) && !grid.isBarrierAt(x, y);
+    }
 
-// Method to check if the starting cell is empty
-private boolean isStartingCellEmpty(int x, int y) {
-    return grid.isInBounds(x, y) && !grid.isFireAt(x, y) && !grid.isBarrierAt(x, y);
-}
+    // Méthode pour réinitialiser la position de départ à une cellule valide et vide
+    private void resetStartingPosition() {
+        for (int i = 0; i < grid.getGridSize(); i++) {
+            for (int j = 0; j < grid.getGridSize(); j++) {
+                if (isStartingCellEmpty(i, j)) {
+                    // Met à jour la position de l'agent avec une nouvelle cellule valide
+                    this.x = i;
+                    this.y = j;
+                    System.out.println("Position reset to: (" + i + ", " + j + ")");
+                    return; // Stop dès qu'une position valide est trouvée
+                }
+            }
+        }
+        // Si aucune position valide n'est trouvée, gérer cette situation ici
+        System.out.println("No valid position available! Please check the grid configuration.");
+    }
+    @Override
+    public void move() {
+        // Si l'humain est apparu, prioriser l'humain immédiatement
+        if (grid.isHumanAppeared()) {
+            System.out.println("FirefighterAgent prioritizing the human.");
+            moveTowardsHuman(); // Déplacement exclusif vers l'humain
+            return; // Évite tout autre comportement
+        }
 
-// Method to reset the starting position to a valid, empty cell
-private void resetStartingPosition() {
-    for (int i = 0; i < grid.getGridSize(); i++) {
-        for (int j = 0; j < grid.getGridSize(); j++) {
-            if (isStartingCellEmpty(i, j)) {
-                // Update the agent's position to the new valid cell
-                this.x = i;
-                this.y = j;
-                System.out.println("Position reset to: (" + i + ", " + j + ")");
-                return; // Stop once a valid position is found
+        // Sinon, continuer avec le comportement habituel
+        moveTowardsNearestObjective();
+    }
+
+
+
+
+
+
+    private void moveTowardsHuman() {
+        int[] humanPosition = grid.getHumanPosition(); // Récupère la position de l'humain
+        if (humanPosition == null) return; // Sécurité si la position de l'humain n'est pas définie
+
+        // Trouver le chemin vers l'humain
+        List<int[]> path = findPathAStar(humanPosition);
+        if (path != null && !path.isEmpty()) {
+            int[] nextStep = path.get(0); // Étape suivante vers l'humain
+            updatePosition(nextStep[0], nextStep[1]);
+
+            // Vérifie si l'agent pompier atteint l'humain
+            if (x == humanPosition[0] && y == humanPosition[1]) {
+                System.out.println("FirefighterAgent reached the human! FirefighterAgent wins!");
+                grid.setWinner("FirefighterAgent");
             }
         }
     }
-    // If no valid position found, you can handle the situation here
-    System.out.println("No valid position available! Please check the grid configuration.");
-}
-    @Override
-    public void move() {
+
+    private void moveTowardsNearestObjective() {
         if (objectives.isEmpty()) {
             return;
         }
@@ -53,9 +86,10 @@ private void resetStartingPosition() {
             return;
         }
 
+        // Trouver le chemin vers l'objectif le plus proche
         List<int[]> path = findPathAStar(targetObjective);
         if (path != null && !path.isEmpty()) {
-            int[] nextStep = path.get(0); // Get the next step in the path
+            int[] nextStep = path.get(0); // Étape suivante vers l'objectif
             updatePosition(nextStep[0], nextStep[1]);
         }
     }
@@ -65,7 +99,7 @@ private void resetStartingPosition() {
         int minDistance = Integer.MAX_VALUE;
 
         for (int[] objective : objectives) {
-            int distance = Math.abs(x - objective[0]) + Math.abs(y - objective[1]); // Manhattan distance
+            int distance = Math.abs(x - objective[0]) + Math.abs(y - objective[1]); // Distance Manhattan
             if (distance < minDistance) {
                 minDistance = distance;
                 nearestObjective = objective;
@@ -91,7 +125,7 @@ private void resetStartingPosition() {
 
             for (int[] neighbor : getNeighbors(current.x, current.y)) {
                 if (closedSet.contains(new Node(neighbor[0], neighbor[1], null, 0, 0))) {
-                    continue; // Ignore already evaluated nodes
+                    continue; // Ignore les noeuds déjà évalués
                 }
 
                 double tentativeG = current.g + movementCost(current.x, current.y, neighbor[0], neighbor[1]);
@@ -105,13 +139,13 @@ private void resetStartingPosition() {
             }
         }
 
-        return null; // No path found
+        return null; // Aucun chemin trouvé
     }
 
     private List<int[]> reconstructPath(Node node) {
         List<int[]> path = new ArrayList<>();
         while (node.parent != null) {
-            path.add(0, new int[]{node.x, node.y}); // Add to the start of the list
+            path.add(0, new int[]{node.x, node.y}); // Ajoute au début de la liste
             node = node.parent;
         }
         return path;
@@ -120,8 +154,8 @@ private void resetStartingPosition() {
     private List<int[]> getNeighbors(int cx, int cy) {
         List<int[]> neighbors = new ArrayList<>();
         int[][] directions = {
-                {0, -1}, {0, 1}, {-1, 0}, {1, 0}, // Cardinal directions: UP, DOWN, LEFT, RIGHT
-                {-1, -1}, {-1, 1}, {1, -1}, {1, 1} // Diagonal directions
+                {0, -1}, {0, 1}, {-1, 0}, {1, 0}, // Directions cardinales: HAUT, BAS, GAUCHE, DROITE
+                {-1, -1}, {-1, 1}, {1, -1}, {1, 1} // Directions diagonales
         };
 
         for (int[] dir : directions) {
@@ -129,7 +163,7 @@ private void resetStartingPosition() {
             int ny = cy + dir[1];
 
             if (nx >= 0 && nx < grid.getGridSize() && ny >= 0 && ny < grid.getGridSize() &&
-                    !grid.isBarrierAt(nx, ny)) { // Only consider non-barrier cells
+                    !grid.isBarrierAt(nx, ny)) { // Ne considère que les cellules non-barrières
                 neighbors.add(new int[]{nx, ny});
             }
         }
@@ -137,12 +171,11 @@ private void resetStartingPosition() {
     }
 
     private double movementCost(int x1, int y1, int x2, int y2) {
-        return (x1 != x2 && y1 != y2) ? Math.sqrt(2) : 1.0; // Cost for diagonal movement vs straight
+        return (x1 != x2 && y1 != y2) ? Math.sqrt(2) : 1.0; // Coût pour les déplacements diagonaux ou droits
     }
 
     private double heuristic(int x, int y, int[] target) {
-        // Euclidean distance as heuristic for diagonal movement
-        return Math.sqrt(Math.pow(x - target[0], 2) + Math.pow(y - target[1], 2));
+        return Math.sqrt(Math.pow(x - target[0], 2) + Math.pow(y - target[1], 2)); // Distance Euclidienne
     }
 
     private void updatePosition(int nextX, int nextY) {

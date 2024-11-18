@@ -9,9 +9,36 @@ public class Grid {
     private final boolean[][] barrierGrid; // Grid for barriers
     private final List<int[]> objectives; // List of objectives
     private final Random random;
+    private boolean notifyAgents = false; // Flag to notify agents
 
-    private int winCaseX = -1, winCaseY = -1; // Coordinates of the win case
-    private int[] humanPosition = null; // Coordinates of the human (if any)
+    private boolean humanAppeared = false; // Indicates if the human has appeared
+    private int[] humanPosition = null; // Coordinates of the human
+    private String winner = null; // To track the winner
+
+
+
+    public void setHumanPosition(int x, int y) {
+        this.humanPosition = new int[]{x, y};
+        this.humanAppeared = true;
+        this.notifyAgents = true; // Notifie tous les agents
+        System.out.println("Human appeared at (" + x + ", " + y + ")");
+    }
+
+    public boolean shouldNotifyAgents() {
+        return notifyAgents;
+    }
+
+    public void resetNotification() {
+        this.notifyAgents = false; // Réinitialise la notification après réaction
+    }
+
+// Indique si les agents doivent être notifiés
+
+
+
+
+
+
 
     public Grid(int size, int objectivesCount) {
         this.gridSize = size;
@@ -29,8 +56,11 @@ public class Grid {
         return gridSize; // Return the grid size
     }
 
+
+
+
     private void initializeBarriers() {
-        for (int i = 0; i < 20; i++) { // Example: Place 5 barriers
+        for (int i = 0; i < 20; i++) { // Example: Place barriers
             int barrierX = random.nextInt(gridSize);
             int barrierY = random.nextInt(gridSize);
             barrierGrid[barrierX][barrierY] = true;
@@ -115,7 +145,6 @@ public class Grid {
         return barriers;
     }
 
-    // New method to check if a cell contains an objective
     public boolean isObjectiveAt(int x, int y) {
         for (int[] objective : objectives) {
             if (objective[0] == x && objective[1] == y) {
@@ -125,7 +154,34 @@ public class Grid {
         return false;
     }
 
-    // Method to check if a cell is empty
     public boolean isCellEmpty(int x, int y) {
         return !isObjectiveAt(x, y) && !isBarrierAt(x, y) && !isFireAt(x, y) && !isSafeAt(x, y);
     }
+
+    //définir la position de l'humain et marquer son apparition.
+    // Human-related functionality
+
+
+
+    //Méthodes isHumanAppeared() et getHumanPosition() pour permettre aux agents de vérifier si l'humain est apparu et d'accéder à sa position.
+    public boolean isHumanAppeared() {
+        return humanAppeared;
+    }
+
+    public int[] getHumanPosition() {
+        return humanPosition;
+    }
+
+    //définir le gagnant lorsqu'un agent atteint l'humain.
+    // Winner-related functionality
+    public void setWinner(String winner) {
+        if (this.winner == null) { // Ensure only the first agent to reach the human can win
+            this.winner = winner;
+            System.out.println("Winner is: " + winner);
+        }
+    }
+
+    public String getWinner() {
+        return winner;
+    }
+}
