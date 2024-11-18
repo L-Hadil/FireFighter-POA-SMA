@@ -36,13 +36,13 @@ public class FirefighterGame extends JPanel {
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
                 if (grid.isFireAt(i, j)) {
-                    g.setColor(new Color(255, 150, 150)); // Rouge clair pour les cases en feu
+                    g.setColor(new Color(255, 150, 150));
                 } else if (grid.isSafeAt(i, j)) {
-                    g.setColor(Color.CYAN); // Cyan pour les cases sécurisées
+                    g.setColor(Color.CYAN);
                 } else if (grid.isBarrierAt(i, j)) {
-                    g.setColor(Color.GRAY); // Gris pour les barrières
+                    g.setColor(Color.GRAY);
                 } else {
-                    g.setColor(Color.WHITE); // Blanc pour les cellules vides
+                    g.setColor(Color.WHITE);
                 }
                 g.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                 g.setColor(Color.BLACK);
@@ -81,9 +81,9 @@ public class FirefighterGame extends JPanel {
     }
 
     private void checkGameOver() {
-        // Vérifiez que le dernier mouvement a bien été effectué avant de terminer le jeu
+
         SwingUtilities.invokeLater(() -> {
-            if (grid.getObjectives().isEmpty()) {  // Vérifie que tous les objectifs sont atteints
+            if (grid.getObjectives().isEmpty()) {
                 gameOver = true;
                 int firefighterScore = firefighterAgent.getScore();
                 int fireScore = fireAgent.getScore();
@@ -113,7 +113,7 @@ public class FirefighterGame extends JPanel {
 
         Timer timer = new Timer(1000, new ActionListener() {
             int turn = 1;
-            boolean isFirefightersTurn = true;  // Variable pour suivre le tour
+            boolean isFirefightersTurn = true;
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -126,12 +126,12 @@ public class FirefighterGame extends JPanel {
                     } else {
                         fireAgent.move();
                         System.out.println("Feu : Score actuel = " + fireAgent.getScore());
-                        turn++;  // Augmente le tour seulement après les deux mouvements
+                        turn++;
                     }
 
                     checkGameOver();
                     repaint();
-                    isFirefightersTurn = !isFirefightersTurn;  // Alterne le tour
+                    isFirefightersTurn = !isFirefightersTurn;
                 }
             }
         });

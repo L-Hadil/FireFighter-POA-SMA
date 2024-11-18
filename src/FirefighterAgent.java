@@ -35,7 +35,6 @@ public class FirefighterAgent extends Agent {
 
 
 
-        // Mettre à jour la position sans affecter l'état de la grille pour les barrières et cases sécurisées
         updatePosition(nextX, nextY);
     }
 

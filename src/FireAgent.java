@@ -28,7 +28,7 @@ public class FireAgent extends Agent {
         int nextX = x, nextY = y;
         boolean moved = false;
 
-        // Attempt to move in the determined direction
+
         switch (fireDirection) {
             case UP -> nextY = Math.max(0, y - 1);
             case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
@@ -40,7 +40,7 @@ public class FireAgent extends Agent {
             updatePosition(nextX, nextY);
             moved = true;
         } else {
-            // Try all other directions if the main one is blocked
+
             for (Direction dir : Direction.values()) {
                 nextX = x;
                 nextY = y;
@@ -72,7 +72,7 @@ public class FireAgent extends Agent {
     private void updatePosition(int nextX, int nextY) {
         x = nextX;
         y = nextY;
-        grid.setFireAt(x, y, true); // Mark the current position as on fire
+        grid.setFireAt(x, y, true);
 
         burnObjective();
         propagateFireToNeighbors();
@@ -90,7 +90,6 @@ public class FireAgent extends Agent {
         return Direction.values()[(int) (Math.random() * Direction.values().length)];
     }
 
-    // Method to propagate fire to neighboring cells
     private void propagateFireToNeighbors() {
         int[][] neighbors = {{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}};
 

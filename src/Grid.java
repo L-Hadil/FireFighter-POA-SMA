@@ -22,7 +22,7 @@ public class Grid {
     }
 
     public int getGridSize() {
-        return gridSize; // Return the grid size
+        return gridSize;
     }
 
     private void initializeBarriers() {
