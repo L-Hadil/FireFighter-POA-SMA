@@ -1,4 +1,4 @@
-import java.util.List;
+import java.util.List; 
 
 public class FirefighterAgent extends Agent {
     private final Grid grid;
