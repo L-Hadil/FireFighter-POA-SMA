@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class FirefighterGame extends JPanel {
     private static final int GRID_SIZE = 10;
-    private static final int OBJECTIVES_COUNT = 4;
+    private static final int OBJECTIVES_COUNT = 9;
     private static final int CELL_SIZE = 50;
     private final Grid grid;
     private final FirefighterAgent firefighterAgent;
@@ -19,17 +19,38 @@ public class FirefighterGame extends JPanel {
     private final Image fireIcon;
     private final Image firefighterIcon;
     private boolean fireAgentTurn = true; // Boolean to alternate turns
+    private final Image humanIcon;
+    private int humanX = -1; // Human's X position (-1 means not placed yet)
+    private int humanY = -1; // Human's Y position
+    private int rounds = 0; // Count rounds
+    private boolean humanAppeared = false;
+
 
     public FirefighterGame() {
         setPreferredSize(new Dimension(GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE + 50));
         grid = new Grid(GRID_SIZE, OBJECTIVES_COUNT);
 
-        fireAgent = new FireAgent((int) (Math.random() * GRID_SIZE), (int) (Math.random() * GRID_SIZE), grid, OBJECTIVES_COUNT);
-        firefighterAgent = new FirefighterAgent(GRID_SIZE / 2, GRID_SIZE / 2, grid, OBJECTIVES_COUNT);
+        int fireX, fireY;
+        do {
+            fireX = (int) (Math.random() * GRID_SIZE);
+            fireY = (int) (Math.random() * GRID_SIZE);
+        } while (grid.isObjectiveAt(fireX, fireY) || grid.isBarrierAt(fireX, fireY));
 
-        // Load icons
-        fireIcon = new ImageIcon("images/img_3.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
-        firefighterIcon = new ImageIcon("images/img_1.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+        fireAgent = new FireAgent(fireX, fireY, grid, OBJECTIVES_COUNT);
+
+
+        int firefighterX, firefighterY;
+        do {
+            firefighterX = (int) (Math.random() * GRID_SIZE/2);
+            firefighterY = (int) (Math.random() * GRID_SIZE/2);
+        } while ((firefighterX == fireX && firefighterY == fireY) ||
+                grid.isObjectiveAt(firefighterX, firefighterY) ||
+                grid.isBarrierAt(firefighterX, firefighterY));
+        firefighterAgent = new FirefighterAgent(firefighterX, firefighterY, grid, OBJECTIVES_COUNT);
+
+        fireIcon = new ImageIcon("assets/icons/img_3.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+        firefighterIcon = new ImageIcon("assets/icons/img_1.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+        humanIcon = new ImageIcon("assets/icons/img_8.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
     }
 
     @Override
@@ -40,6 +61,9 @@ public class FirefighterGame extends JPanel {
         drawFire(g);
         drawObjectives(g);
         drawScores(g);
+        if (humanX != -1 && humanY != -1) {
+            drawHuman(g);
+        }
         if (gameOver) drawGameOverMessage(g);
     }
 
@@ -69,10 +93,21 @@ public class FirefighterGame extends JPanel {
     private void drawFire(Graphics g) {
         g.drawImage(fireIcon, fireAgent.getX() * CELL_SIZE, fireAgent.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);
     }
-
+    private void drawHuman(Graphics g) {
+        if(humanAppeared){
+        g.drawImage(humanIcon, humanX * CELL_SIZE, humanY * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);}
+    }
+    private void placeHumanInEmptyCell() {
+        do {
+            humanX = (int) (Math.random() * GRID_SIZE);
+            humanY = (int) (Math.random() * GRID_SIZE);
+        } while (!grid.isEmpty(humanX, humanY) ||
+                (firefighterAgent.getX() == humanX && firefighterAgent.getY() == humanY) ||
+                (fireAgent.getX() == humanX && fireAgent.getY() == humanY));
+    }
     private void drawObjectives(Graphics g) {
         try {
-            Image greenIcon = ImageIO.read(new File("images/img_4.png"));
+            Image greenIcon = ImageIO.read(new File("assets/icons/img_4.png"));
             for (int[] obj : grid.getObjectives()) {
                 g.drawImage(greenIcon, obj[0] * CELL_SIZE, obj[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);
             }
@@ -107,7 +142,20 @@ public class FirefighterGame extends JPanel {
             }
 
             JOptionPane.showMessageDialog(this, winnerMessage, "Résultat de la Partie", JOptionPane.INFORMATION_MESSAGE);
+
         }
+        // Optional: Check if a special condition (e.g., reaching the human) ends the game
+        if ((firefighterAgent.getX() == humanX && firefighterAgent.getY() == humanY)) {
+            gameOver = true;
+            winnerMessage = "Pompier a sauvé l'humain !";
+            JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        } else if ((fireAgent.getX() == humanX && fireAgent.getY() == humanY)) {
+            gameOver = true;
+            winnerMessage = "Feu a capturé l'humain !";
+            JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+
     }
 
     public void playGame() {
@@ -120,7 +168,12 @@ public class FirefighterGame extends JPanel {
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!gameOver) {
+                        if (!gameOver) {
+                            rounds++; // Increment round counter
+                            if (rounds >= (0+(Math.random()*2))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
+                                placeHumanInEmptyCell();
+                                humanAppeared = true;// Ensure the human appears on an empty cell
+                            }
                     if (fireAgentTurn) {
                         fireAgent.move();
                         System.out.println("--------------Fire Agent Turn");
@@ -130,6 +183,9 @@ public class FirefighterGame extends JPanel {
                         firefighterAgent.move();
                         System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
                     }
+                            if (humanAppeared) {
+                                System.out.println("Human appeared at (" + humanX + ", " + humanY + ")");
+                            }
                     checkGameOver();
                     repaint();
                     fireAgentTurn = !fireAgentTurn;
