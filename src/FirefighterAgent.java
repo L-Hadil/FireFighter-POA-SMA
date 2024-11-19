@@ -1,8 +1,8 @@
-import java.util.List; 
+import java.util.List;
 
 public class FirefighterAgent extends Agent {
     private final Grid grid;
-    private final int objectivesCount; // Nombre d'objectifs total
+    private final int objectivesCount;
     private List<int[]> objectives;
     private int score;
 
@@ -14,18 +14,49 @@ public class FirefighterAgent extends Agent {
         this.score = 0;
     }
 
-
     @Override
     public void move() {
+        // Vérifie si l'humain est apparu
+        if (grid.isHumanAppeared()) {
+            System.out.println("FirefighterAgent prioritizing the human.");
+            moveTowardsHuman(); // Déplace vers l'humain si détecté
+            return;
+        }
+
+        // Sinon, suit le comportement habituel pour atteindre les objectifs
+        moveTowardsNearestObjective();
+    }
+
+    private void moveTowardsHuman() {
+        int[] humanPosition = grid.getHumanPosition(); // Récupère la position de l'humain
+        if (humanPosition == null) return;
+
+        moveToTarget(humanPosition[0], humanPosition[1]);
+
+        // Vérifie si l'agent atteint l'humain
+        if (x == humanPosition[0] && y == humanPosition[1]) {
+            System.out.println("FirefighterAgent reached the human! FirefighterAgent wins!");
+            grid.setWinner("FirefighterAgent");
+        }
+    }
+
+    private void moveTowardsNearestObjective() {
         if (objectives.isEmpty()) {
             return;
         }
 
-        int[] targetObjective = objectives.get(0); // Choisir le premier objectif restant
-        Direction direction = determineDirection(targetObjective[0], targetObjective[1]);
+        int[] targetObjective = findNearestObjective();
+        if (targetObjective != null) {
+            moveToTarget(targetObjective[0], targetObjective[1]);
+        }
+    }
+
+    private void moveToTarget(int targetX, int targetY) {
+        Direction direction = determineDirection(targetX, targetY);
 
         int nextX = x;
         int nextY = y;
+
         switch (direction) {
             case UP -> nextY = Math.max(0, y - 1);
             case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
@@ -48,31 +79,12 @@ public class FirefighterAgent extends Agent {
                 nextY = Math.min(grid.getGridSize() - 1, y + 1);
             }
         }
+
         if (canMoveTo(nextX, nextY)) {
             updatePosition(nextX, nextY);
         } else {
-            System.out.println("FireFighter blocked at position (" + x + ", " + y + ") by all directions.");
-            move();
+            System.out.println("FirefighterAgent blocked at position (" + x + ", " + y + ").");
         }
-    }
-
-
-    private void updatePosition(int nextX, int nextY) {
-        x = nextX;
-        y = nextY;
-
-        // Éteindre le feu si le pompier est sur une case en feu
-        if (grid.isFireAt(x, y)) {
-            grid.setFireAt(x, y, false);
-            System.out.println("Pompier : Feu éteint à la position (" + x + ", " + y + ")");
-        }
-
-        // Marquer la case comme sécurisée pour empêcher le feu de revenir dessus
-        grid.setSafeAt(x, y);
-        System.out.println("Pompier : Case sécurisée à la position (" + x + ", " + y + ")");
-
-        // Sauver l'objectif s'il est atteint
-        saveObjective();
     }
 
     private Direction determineDirection(int targetX, int targetY) {
@@ -86,18 +98,50 @@ public class FirefighterAgent extends Agent {
         return Direction.UP;
     }
 
+    private int[] findNearestObjective() {
+        int[] nearestObjective = null;
+        int minDistance = Integer.MAX_VALUE;
+
+        for (int[] objective : objectives) {
+            int distance = Math.abs(x - objective[0]) + Math.abs(y - objective[1]); // Distance Manhattan
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestObjective = objective;
+            }
+        }
+        return nearestObjective;
+    }
+
+    private void updatePosition(int nextX, int nextY) {
+        x = nextX;
+        y = nextY;
+
+        if (grid.isFireAt(x, y)) {
+            grid.setFireAt(x, y, false);
+            System.out.println("FirefighterAgent extinguished fire at (" + x + ", " + y + ")");
+        }
+
+        grid.setSafeAt(x, y);
+        System.out.println("FirefighterAgent secured cell at (" + x + ", " + y + ")");
+
+        saveObjective();
+    }
+
     private void saveObjective() {
         objectives.removeIf(obj -> {
             if (obj[0] == x && obj[1] == y && score < objectivesCount) {
                 score++;
+                System.out.println("FirefighterAgent saved objective at (" + x + ", " + y + ")");
                 return true;
             }
             return false;
         });
     }
+
     private boolean canMoveTo(int nextX, int nextY) {
-        return !grid.isAgentAt(nextX, nextY)&& !grid.isBarrierAt(nextX, nextY);
+        return true;
     }
+
     public int getScore() {
         return score;
     }

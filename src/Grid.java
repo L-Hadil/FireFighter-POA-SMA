@@ -9,8 +9,58 @@ public class Grid {
     private final boolean[][] barrierGrid;  // Grille des barrières
     private final List<int[]> objectives;   // Liste des objectifs
     private final Random random;
+    private String winner = null; // To track the winner
+
     private List<Agent> agents = new ArrayList<>();
     private final boolean[][] humanGrid;
+    private boolean notifyAgents = false; // Flag to notify agents
+
+    private boolean humanAppeared = false; // Indicates if the human has appeared
+    private int[] humanPosition = null; // Coordinates of the human
+
+
+    public void setHumanPosition(int x, int y) {
+        this.humanPosition = new int[]{x, y};
+        this.humanAppeared = true;
+        this.notifyAgents = true; // Notifie tous les agents
+        System.out.println("Human appeared at (" + x + ", " + y + ")");
+    }
+
+    public boolean shouldNotifyAgents() {
+        return notifyAgents;
+    }
+    public List<int[]> getBarriers() {
+        List<int[]> barriers = new ArrayList<>();
+        for (int i = 0; i < gridSize; i++) {
+            for (int j = 0; j < gridSize; j++) {
+                if (isBarrierAt(i, j)) {
+                    barriers.add(new int[]{i, j});
+                }
+            }
+        }
+        return barriers;
+    }
+    public boolean isInBounds(int x, int y) {
+        return x >= 0 && x < gridSize && y >= 0 && y < gridSize;
+    }
+
+    public void setWinner(String winner) {
+        if (this.winner == null) { // Ensure only the first agent to reach the human can win
+            this.winner = winner;
+            System.out.println("Winner is: " + winner);
+        }
+    }
+
+    public void resetNotification() {
+        this.notifyAgents = false; // Réinitialise la notification après réaction
+    }
+    public boolean isHumanAppeared() {
+        return humanAppeared;
+    }
+
+    public int[] getHumanPosition() {
+        return humanPosition;
+    }
 
     public Grid(int size, int objectivesCount) {
         this.gridSize = size;
