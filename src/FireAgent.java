@@ -1,15 +1,18 @@
 import java.util.List;
+import java.util.Random;
 
 public class FireAgent extends Agent {
     private final Grid grid;
     private final int objectivesCount; // Total number of objectives
     private int score; // Fire's score
+    private final Random random;
 
     public FireAgent(int startX, int startY, Grid grid, int objectivesCount) {
         super(startX, startY);
         this.grid = grid;
         this.objectivesCount = objectivesCount;
         this.score = 0;
+        this.random = new Random();
     }
 
     @Override
@@ -41,6 +44,7 @@ public class FireAgent extends Agent {
             updatePosition(nextX, nextY);
         } else {
             System.out.println("Fire blocked at position (" + x + ", " + y + ") by all directions.");
+            jumpToRandomEmptyCell();
         }
     }
 
@@ -137,4 +141,24 @@ public class FireAgent extends Agent {
     public int getScore() {
         return score;
     }
+
+    private void jumpToRandomEmptyCell() {
+        int gridSize = grid.getGridSize();
+        int randomX, randomY;
+
+        // Try a number of random positions until an empty cell is found
+        for (int i = 0; i < 10; i++) {  // Limit the number of attempts to avoid infinite loops
+            randomX = random.nextInt(gridSize);
+            randomY = random.nextInt(gridSize);
+
+            if (canMoveTo(randomX, randomY)) {
+                updatePosition(randomX, randomY);
+                System.out.println("Fire jumped to random empty cell at (" + randomX + ", " + randomY + ")");
+                return;
+            }
+        }
+
+        System.out.println("Unable to jump to a random empty cell after 10 attempts.");
+    }
+
 }
