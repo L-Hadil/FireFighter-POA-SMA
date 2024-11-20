@@ -4,14 +4,13 @@ import java.util.Random;
 
 public class Grid {
     private final int gridSize;
-    private final boolean[][] fireGrid;    // Grid for fire
-    private final boolean[][] safeGrid;    // Grid for safe cells
-    private final boolean[][] barrierGrid; // Grid for barriers
-    private final List<int[]> objectives; // List of objectives
+    private final boolean[][] fireGrid;    // Grille des incendies
+    private final boolean[][] safeGrid;     // Grille des cases sécurisées
+    private final boolean[][] barrierGrid;  // Grille des barrières
+    private final List<int[]> objectives;   // Liste des objectifs
     private final Random random;
-
-    private int winCaseX = -1, winCaseY = -1; // Coordinates of the win case
-    private int[] humanPosition = null; // Coordinates of the human (if any)
+    private List<Agent> agents = new ArrayList<>();
+    private final boolean[][] humanGrid;
 
     public Grid(int size, int objectivesCount) {
         this.gridSize = size;
@@ -20,6 +19,7 @@ public class Grid {
         this.barrierGrid = new boolean[size][size];
         this.objectives = new ArrayList<>();
         this.random = new Random();
+        this.humanGrid= new boolean[size][size];
 
         initializeBarriers();
         initializeObjectives(objectivesCount);
@@ -30,11 +30,11 @@ public class Grid {
     }
 
     private void initializeBarriers() {
-        for (int i = 0; i < 20; i++) { // Example: Place 5 barriers
+        for (int i = 0; i < 5; i++) { // Example for placing 5 barriers
             int barrierX = random.nextInt(gridSize);
             int barrierY = random.nextInt(gridSize);
             barrierGrid[barrierX][barrierY] = true;
-            System.out.println("Barrier placed at (" + barrierX + ", " + barrierY + ")");
+            System.out.println("Barrière placée à la position (" + barrierX + ", " + barrierY + ")");
         }
     }
 
@@ -47,7 +47,7 @@ public class Grid {
                 objY = random.nextInt(gridSize);
             }
             objectives.add(new int[]{objX, objY});
-            System.out.println("Objective placed at (" + objX + ", " + objY + ")");
+            System.out.println("Objectif placé à la position (" + objX + ", " + objY + ")");
         }
     }
 
@@ -60,62 +60,32 @@ public class Grid {
     }
 
     public boolean isSafeAt(int x, int y) {
-        return safeGrid[x][y];
+        return safeGrid[x][y];  // Returns whether the cell is safe
     }
 
     public void setSafeAt(int x, int y) {
-        safeGrid[x][y] = true;
+        safeGrid[x][y] = true;  // Mark the cell as safe
     }
 
     public boolean isBarrierAt(int x, int y) {
-        return barrierGrid[x][y];
+        return barrierGrid[x][y];  // Returns whether there is a barrier at the given cell
     }
 
     public List<int[]> getObjectives() {
-        return objectives;
+        return objectives;  // Returns the list of objectives
     }
 
     public void removeObjective(int x, int y) {
-        objectives.removeIf(obj -> obj[0] == x && obj[1] == y);
+        objectives.removeIf(obj -> obj[0] == x && obj[1] == y);  // Remove the objective at the given coordinates
     }
 
     public boolean hasObjectives() {
-        return !objectives.isEmpty();
-    }
+        return !objectives.isEmpty();  // Returns true if there are still objectives left
 
-    public boolean isInBounds(int x, int y) {
-        return x >= 0 && x < gridSize && y >= 0 && y < gridSize;
     }
-
     public boolean isEmpty(int x, int y) {
-        return !fireGrid[x][y] && !barrierGrid[x][y] && !safeGrid[x][y];
+        return !isFireAt(x, y) && !isSafeAt(x, y) && !isBarrierAt(x, y);
     }
-
-    public List<int[]> getEmptyCells() {
-        List<int[]> emptyCells = new ArrayList<>();
-        for (int i = 0; i < gridSize; i++) {
-            for (int j = 0; j < gridSize; j++) {
-                if (!isFireAt(i, j) && !isBarrierAt(i, j) && !isSafeAt(i, j)) {
-                    emptyCells.add(new int[]{i, j});
-                }
-            }
-        }
-        return emptyCells;
-    }
-
-    public List<int[]> getBarriers() {
-        List<int[]> barriers = new ArrayList<>();
-        for (int i = 0; i < gridSize; i++) {
-            for (int j = 0; j < gridSize; j++) {
-                if (isBarrierAt(i, j)) {
-                    barriers.add(new int[]{i, j});
-                }
-            }
-        }
-        return barriers;
-    }
-
-    // New method to check if a cell contains an objective
     public boolean isObjectiveAt(int x, int y) {
         for (int[] objective : objectives) {
             if (objective[0] == x && objective[1] == y) {
@@ -125,7 +95,21 @@ public class Grid {
         return false;
     }
 
-    // Method to check if a cell is empty
-    public boolean isCellEmpty(int x, int y) {
-        return !isObjectiveAt(x, y) && !isBarrierAt(x, y) && !isFireAt(x, y) && !isSafeAt(x, y);
+    public boolean isAgentAt(int x, int y) {
+        for (Agent agent : agents) {
+            if (agent.getX() == x && agent.getY() == y) {
+                return true;
+            }
+        }
+        return false;
     }
+    public boolean isHumanAt(int x, int y) {
+        return humanGrid[x][y];
+    }
+
+
+    }
+
+
+
+
