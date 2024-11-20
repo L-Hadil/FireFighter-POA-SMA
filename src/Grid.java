@@ -29,7 +29,7 @@ public class Grid {
         return gridSize; // Return the grid size
     }
 
-    private void initializeBarriers() {
+    public void initializeBarriers() {
         for (int i = 0; i < 5; i++) { // Example for placing 5 barriers
             int barrierX = random.nextInt(gridSize);
             int barrierY = random.nextInt(gridSize);
@@ -38,7 +38,28 @@ public class Grid {
         }
     }
 
-    private void initializeObjectives(int count) {
+    public void reset() {
+        // Réinitialiser les grilles
+        for (int i = 0; i < gridSize; i++) {
+            for (int j = 0; j < gridSize; j++) {
+                fireGrid[i][j] = false;
+                safeGrid[i][j] = false;
+                barrierGrid[i][j] = false;
+                humanGrid[i][j] = false;
+            }
+        }
+
+        // Réinitialiser les objectifs
+        objectives.clear();
+
+        // Réinitialiser les barrières et les objectifs
+        initializeBarriers();
+        initializeObjectives(FirefighterGame.OBJECTIVES_COUNT);
+    }
+
+
+
+    public void initializeObjectives(int count) {
         for (int i = 0; i < count; i++) {
             int objX = random.nextInt(gridSize);
             int objY = random.nextInt(gridSize);
