@@ -20,50 +20,44 @@ public class FirefighterAgent extends Agent {
             return; // No objectives left to save
         }
 
-        // Find the closest objective using Manhattan distance
+        
         int[] closestObjective = findClosestObjective();
 
-        // Determine the direction to move towards the closest objective
+      
         Direction direction = determineDirection(closestObjective[0], closestObjective[1]);
 
         int nextX = x;
         int nextY = y;
 
-        // Try moving in random directions until a valid move is found
-        boolean moved = false;
-        while (!moved) {
-            switch (direction) {
-                case UP -> nextY = Math.max(0, y - 1);
-                case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
-                case LEFT -> nextX = Math.max(0, x - 1);
-                case RIGHT -> nextX = Math.min(grid.getGridSize() - 1, x + 1);
-                case UP_LEFT -> {
-                    nextX = Math.max(0, x - 1);
-                    nextY = Math.max(0, y - 1);
-                }
-                case UP_RIGHT -> {
-                    nextX = Math.min(grid.getGridSize() - 1, x + 1);
-                    nextY = Math.max(0, y - 1);
-                }
-                case DOWN_LEFT -> {
-                    nextX = Math.max(0, x - 1);
-                    nextY = Math.min(grid.getGridSize() - 1, y + 1);
-                }
-                case DOWN_RIGHT -> {
-                    nextX = Math.min(grid.getGridSize() - 1, x + 1);
-                    nextY = Math.min(grid.getGridSize() - 1, y + 1);
-                }
+         (greedy approach)
+        switch (direction) {
+            case UP -> nextY = Math.max(0, y - 1);
+            case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
+            case LEFT -> nextX = Math.max(0, x - 1);
+            case RIGHT -> nextX = Math.min(grid.getGridSize() - 1, x + 1);
+            case UP_LEFT -> {
+                nextX = Math.max(0, x - 1);
+                nextY = Math.max(0, y - 1);
             }
+            case UP_RIGHT -> {
+                nextX = Math.min(grid.getGridSize() - 1, x + 1);
+                nextY = Math.max(0, y - 1);
+            }
+            case DOWN_LEFT -> {
+                nextX = Math.max(0, x - 1);
+                nextY = Math.min(grid.getGridSize() - 1, y + 1);
+            }
+            case DOWN_RIGHT -> {
+                nextX = Math.min(grid.getGridSize() - 1, x + 1);
+                nextY = Math.min(grid.getGridSize() - 1, y + 1);
+            }
+        }
 
-            // Check if the new position is valid and not blocked
-            if (canMoveTo(nextX, nextY)) {
-                updatePosition(nextX, nextY);
-                moved = true; // Successfully moved, break the loop
-            } else {
-                // If blocked, choose a new random direction to try again
-                direction = Direction.values()[(int) (Math.random() * Direction.values().length)];
-                System.out.println("Firefighter blocked at position (" + x + ", " + y + "). Trying a new direction...");
-            }
+        
+        if (canMoveTo(nextX, nextY)) {
+            updatePosition(nextX, nextY);
+        } else {
+            System.out.println("Firefighter blocked at position (" + x + ", " + y + "). No valid move.");
         }
     }
 
@@ -86,17 +80,17 @@ public class FirefighterAgent extends Agent {
         x = nextX;
         y = nextY;
 
-        // Extinguish fire if the firefighter is on a fire cell
+        
         if (grid.isFireAt(x, y)) {
             grid.setFireAt(x, y, false);
             System.out.println("Firefighter: Fire extinguished at position (" + x + ", " + y + ")");
         }
 
-        // Mark the cell as safe
+        /
         grid.setSafeAt(x, y);
         System.out.println("Firefighter: Position secured at (" + x + ", " + y + ")");
 
-        // Save the objective if reached
+        
         saveObjective();
     }
 
@@ -123,7 +117,7 @@ public class FirefighterAgent extends Agent {
     }
 
     private boolean canMoveTo(int nextX, int nextY) {
-        return (!grid.isAgentAt(nextX, nextY)&&!grid.isBarrierAt(nextX,nextY)); // Ensure the cell isn't occupied by another agent
+        return (!grid.isAgentAt(nextX, nextY) && !grid.isBarrierAt(nextX, nextY)); // Ensure the cell isn't occupied by another agent
     }
 
     public int getScore() {
