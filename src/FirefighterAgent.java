@@ -29,7 +29,7 @@ public class FirefighterAgent extends Agent {
         int nextX = x;
         int nextY = y;
 
-         (greedy approach)
+        // (greedy approach)
         switch (direction) {
             case UP -> nextY = Math.max(0, y - 1);
             case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
@@ -86,7 +86,7 @@ public class FirefighterAgent extends Agent {
             System.out.println("Firefighter: Fire extinguished at position (" + x + ", " + y + ")");
         }
 
-        /
+
         grid.setSafeAt(x, y);
         System.out.println("Firefighter: Position secured at (" + x + ", " + y + ")");
 
