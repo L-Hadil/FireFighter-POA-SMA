@@ -53,7 +53,7 @@ public class FirefighterGame extends JPanel {
         firefighterIcon = new ImageIcon("assets/icons/img_1.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
         humanIcon = new ImageIcon("assets/icons/img_8.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
         barrierIcon = new ImageIcon("assets/icons/img_5.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
-
+/*
         // Create control panel
         JPanel controlPanel = new JPanel();
         JButton startButton = new JButton("Start Game");
@@ -72,6 +72,7 @@ public class FirefighterGame extends JPanel {
 
         // Add the control panel to the top (after the empty zone)
         add(controlPanel, BorderLayout.LINE_END);
+        */
     }
 
     @Override
@@ -201,7 +202,7 @@ public class FirefighterGame extends JPanel {
                         if (!gameOver) {
                             rounds++; // Increment round counter
                             if (rounds >= (10+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
-                                placeHumanInEmptyCell();
+                           //     placeHumanInEmptyCell();
                                 humanAppeared = true;
                             }
                     if (fireAgentTurn) {
