@@ -11,6 +11,35 @@ public class Grid {
     private final Random random;
     private List<Agent> agents = new ArrayList<>();
     private final boolean[][] humanGrid;
+    private boolean notifyAgents = false; // Flag to notify agents
+    private int[] humanPosition = null;
+    private boolean humanAppeared = false;
+
+
+
+
+    public void resetNotification() {
+        this.notifyAgents = false; // Réinitialise la notification après réaction
+    }
+
+
+    public void setHumanPosition(int x, int y) {
+        this.humanPosition = new int[]{x, y};
+        this.humanAppeared = true;
+        this.notifyAgents = true; // Notifie tous les agents
+        System.out.println("Human appeared at (" + x + ", " + y + ")");
+    }
+
+
+    public int[] getHumanPosition() {
+        if (humanPosition == null) {
+            System.out.println("Aucun humain n'a été défini dans la grille.");
+            return null;
+        }
+        return humanPosition;
+    }
+
+
 
     public Grid(int size, int objectivesCount) {
         this.gridSize = size;
@@ -105,6 +134,30 @@ public class Grid {
     }
     public boolean isHumanAt(int x, int y) {
         return humanGrid[x][y];
+    }
+    public boolean isHumanAppeared() {
+        return humanAppeared;
+    }
+
+
+    public int[] calculateMoveTowardsHuman(int currentX, int currentY) {
+        if (!humanAppeared || humanPosition == null) {
+            System.out.println("Aucun humain présent dans la grille.");
+            return null;
+        }
+
+        int nextX = currentX;
+        int nextY = currentY;
+
+        // Calcul du déplacement vers l'humain
+        if (Math.abs(humanPosition[0] - currentX) > Math.abs(humanPosition[1] - currentY)) {
+            nextX += (humanPosition[0] > currentX) ? 1 : -1; // Déplacement vertical
+        } else {
+            nextY += (humanPosition[1] > currentY) ? 1 : -1; // Déplacement horizontal
+        }
+
+        // Retourne la prochaine position
+        return new int[]{nextX, nextY};
     }
 
 

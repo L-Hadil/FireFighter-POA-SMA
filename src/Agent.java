@@ -15,5 +15,14 @@ public abstract class Agent {
         return y;
     }
 
+
+    public void setX(int newX) {
+        this.x = newX;
+    }
+
+    public void setY(int newY) {
+        this.y = newY;
+    }
+
     public abstract void move(); // Méthode abstraite à implémenter dans les sous-classes
 }

@@ -14,56 +14,62 @@ public class FirefighterAgent extends Agent {
         this.score = 0;
     }
 
+
     @Override
     public void move() {
-        if (objectives.isEmpty()) {
-            return; // No objectives left to save
+        // Si l'humain est apparu, prioriser l'humain immédiatement
+        if (grid.isHumanAppeared()) {
+            System.out.println("FireFighterAgent prioritizing the human.");
+            moveTowardsHuman(); // Déplacement exclusif vers l'humain
+            return; // Évite tout autre comportement
         }
 
-        // Find the closest objective using Manhattan distance
+        // Sinon, continuer avec le comportement habituel
+        moveTowardsNearestObjective();
+    }
+    public void moveTowardsNearestObjective() {
+        // Trouver l'objectif le plus proche (en utilisant la distance Manhattan)
         int[] closestObjective = findClosestObjective();
+        if (closestObjective == null) {
+            System.out.println("Aucun objectif disponible.");
+            return;
+        }
 
-        // Determine the direction to move towards the closest objective
-        Direction direction = determineDirection(closestObjective[0], closestObjective[1]);
-
+        // Déterminer la direction vers l'objectif le plus proche
         int nextX = x;
         int nextY = y;
 
-        // Try moving in random directions until a valid move is found
-        boolean moved = false;
-        while (!moved) {
-            switch (direction) {
-                case UP -> nextY = Math.max(0, y - 1);
-                case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
-                case LEFT -> nextX = Math.max(0, x - 1);
-                case RIGHT -> nextX = Math.min(grid.getGridSize() - 1, x + 1);
-                case UP_LEFT -> {
-                    nextX = Math.max(0, x - 1);
-                    nextY = Math.max(0, y - 1);
-                }
-                case UP_RIGHT -> {
-                    nextX = Math.min(grid.getGridSize() - 1, x + 1);
-                    nextY = Math.max(0, y - 1);
-                }
-                case DOWN_LEFT -> {
-                    nextX = Math.max(0, x - 1);
-                    nextY = Math.min(grid.getGridSize() - 1, y + 1);
-                }
-                case DOWN_RIGHT -> {
-                    nextX = Math.min(grid.getGridSize() - 1, x + 1);
-                    nextY = Math.min(grid.getGridSize() - 1, y + 1);
-                }
-            }
+        if (Math.abs(closestObjective[0] - x) > Math.abs(closestObjective[1] - y)) {
+            nextX += (closestObjective[0] > x) ? 1 : -1;
+        } else {
+            nextY += (closestObjective[1] > y) ? 1 : -1;
+        }
 
-            // Check if the new position is valid and not blocked
-            if (canMoveTo(nextX, nextY)) {
-                updatePosition(nextX, nextY);
-                moved = true; // Successfully moved, break the loop
-            } else {
-                // If blocked, choose a new random direction to try again
-                direction = Direction.values()[(int) (Math.random() * Direction.values().length)];
-                System.out.println("Firefighter blocked at position (" + x + ", " + y + "). Trying a new direction...");
-            }
+        // Vérifier si le mouvement est valide
+        if (canMoveTo(nextX, nextY)) {
+            updatePosition(nextX, nextY);
+            System.out.println("FireFighterAgent moved towards nearest objective: (" + nextX + ", " + nextY + ")");
+        } else {
+            System.out.println("Movement blocked towards nearest objective at (" + nextX + ", " + nextY + ").");
+        }
+    }
+
+    public void moveTowardsHuman() {
+        int[] nextMove = grid.calculateMoveTowardsHuman(x, y);
+
+        if (nextMove == null) {
+            System.out.println("Déplacement impossible : Aucun humain détecté.");
+            return;
+        }
+
+        int nextX = nextMove[0];
+        int nextY = nextMove[1];
+
+        if (canMoveTo(nextX, nextY)) {
+            updatePosition(nextX, nextY);
+            System.out.println("FireFighterAgent moved towards human: (" + nextX + ", " + nextY + ")");
+        } else {
+            System.out.println("FireFighterAgent blocked at (" + nextX + ", " + nextY + ").");
         }
     }
 

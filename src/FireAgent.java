@@ -19,8 +19,58 @@ public class FireAgent extends Agent {
 
     @Override
     public void move() {
+
+        if (grid.isHumanAppeared()) {
+            System.out.println("FireAgent prioritizing the human.");
+            moveTowardsHuman(); // Déplacement exclusif vers l'humain
+            return; // Évite tout autre comportement
+        }
+
+
         moveFireTowardsNearestObjective();
     }
+
+
+    public void moveTowardsHuman() {
+        if (!grid.isHumanAppeared()) {
+            System.out.println("Aucun humain trouvé dans la grille.");
+            return;
+        }
+
+        int[] nextMove = grid.calculateMoveTowardsHuman(x, y);
+
+        if (nextMove == null) {
+            System.out.println("Déplacement impossible : Aucun humain détecté.");
+            return;
+        }
+
+        int nextX = nextMove[0];
+        int nextY = nextMove[1];
+
+        // Vérifier si le mouvement est possible
+        if (canMoveTo(nextX, nextY)) {
+            updatePosition(nextX, nextY);
+            System.out.println("FireAgent moved towards human: (" + nextX + ", " + nextY + ")");
+        } else {
+            System.out.println("FireAgent blocked at (" + nextX + ", " + nextY + ").");
+            handleBlockage(); // Gérer le blocage
+        }
+    }
+
+    // Méthode pour gérer les blocages
+    private void handleBlockage() {
+        // Rechercher des cellules autour pour propager le feu
+        propagateFireToNeighbors();
+
+        // Si toujours bloqué, sauter vers une cellule vide aléatoire
+        if (x == grid.getHumanPosition()[0] && y == grid.getHumanPosition()[1]) {
+            jumpToRandomEmptyCell();
+        }
+    }
+
+
+
+
 
     private void moveFireTowardsNearestObjective() {
         if (grid.getObjectives().isEmpty()) return;

@@ -54,6 +54,8 @@ public class FirefighterGame extends JPanel {
         humanIcon = new ImageIcon("assets/icons/img_8.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
         barrierIcon = new ImageIcon("assets/icons/img_5.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
 
+
+        /*
         // Create control panel
         JPanel controlPanel = new JPanel();
         JButton startButton = new JButton("Start Game");
@@ -72,6 +74,8 @@ public class FirefighterGame extends JPanel {
 
         // Add the control panel to the top (after the empty zone)
         add(controlPanel, BorderLayout.LINE_END);
+
+         */
     }
 
     @Override
@@ -154,38 +158,32 @@ public class FirefighterGame extends JPanel {
     }
 
     private void checkGameOver() {
-        if (!grid.hasObjectives()) {
+        if (!grid.hasObjectives()) { // No objectives left
             gameOver = true;
+
             int firefighterScore = firefighterAgent.getScore();
             int fireScore = fireAgent.getScore();
 
             if (firefighterScore > fireScore) {
-                winnerMessage = "Victoire du pompier ! Objectifs protégés : " + firefighterScore;
+                winnerMessage = "Victory for the Firefighter! Protected objectives: " + firefighterScore;
             } else if (fireScore > firefighterScore) {
-                winnerMessage = "Victoire du feu ! Objectifs brûlés : " + fireScore;
+                winnerMessage = "Victory for the Fire! Burned objectives: " + fireScore;
             } else {
-                winnerMessage = "Match nul ! Les scores sont égaux : " + firefighterScore;
+                winnerMessage = "It's a tie! Scores are equal: " + firefighterScore;
             }
 
-            JOptionPane.showMessageDialog(this, winnerMessage, "Résultat de la Partie", JOptionPane.INFORMATION_MESSAGE);
-
+            JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
         }
-        // Optional: Check if a special condition (e.g., reaching the human) ends the game
+
         if ((firefighterAgent.getX() == humanX && firefighterAgent.getY() == humanY)) {
-            winnerMessage = "Pompier a sauvé l'humain !";
-            humanX =-1;
-            humanY = -1;
             gameOver = true;
+            winnerMessage = "Victory for the Firefighter! Reached the human!";
             JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
         } else if ((fireAgent.getX() == humanX && fireAgent.getY() == humanY)) {
-            winnerMessage = "Feu a capturé l'humain !";
-            humanX =-1;
-            humanY = -1;
             gameOver = true;
+            winnerMessage = "Victory for the Fire! Reached the human!";
             JOptionPane.showMessageDialog(this, winnerMessage, "Game Over", JOptionPane.INFORMATION_MESSAGE);
         }
-
-
     }
 
     public void playGame() {
@@ -200,9 +198,10 @@ public class FirefighterGame extends JPanel {
             public void actionPerformed(ActionEvent e) {
                         if (!gameOver) {
                             rounds++; // Increment round counter
-                            if (rounds >= (10+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
+                            if (rounds >= (5+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
                                 placeHumanInEmptyCell();
                                 humanAppeared = true;
+                                grid.setHumanPosition(humanX, humanY);
                             }
                     if (fireAgentTurn) {
                         fireAgent.move();
@@ -213,10 +212,17 @@ public class FirefighterGame extends JPanel {
                         firefighterAgent.move();
                         System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
                     }
-                            if (humanAppeared) {
-                                System.out.println("Human appeared at (" + humanX + ", " + humanY + ")");
+
+                            if (grid.isHumanAppeared()) {
+                                firefighterAgent.move();
+                                fireAgent.move();
+                                grid.resetNotification();
+                                checkGameOver();
+                                repaint();
+                                return;
                             }
-                    checkGameOver();
+
+                            checkGameOver();
                     repaint();
                     fireAgentTurn = !fireAgentTurn;
                 }
