@@ -53,7 +53,8 @@ public class FirefighterGame extends JPanel {
         firefighterIcon = new ImageIcon("assets/icons/img_1.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
         humanIcon = new ImageIcon("assets/icons/img_8.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
         barrierIcon = new ImageIcon("assets/icons/img_5.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
-/*
+
+        /*
         // Create control panel
         JPanel controlPanel = new JPanel();
         JButton startButton = new JButton("Start Game");
@@ -72,7 +73,8 @@ public class FirefighterGame extends JPanel {
 
         // Add the control panel to the top (after the empty zone)
         add(controlPanel, BorderLayout.LINE_END);
-        */
+
+         */
     }
 
     @Override
@@ -122,7 +124,7 @@ public class FirefighterGame extends JPanel {
     }
     private void drawHuman(Graphics g) {
         if(humanAppeared){
-        g.drawImage(humanIcon, humanX * CELL_SIZE, humanY * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);}
+            g.drawImage(humanIcon, humanX * CELL_SIZE, humanY * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);}
     }
     private void placeHumanInEmptyCell() {
         do {
@@ -199,33 +201,46 @@ public class FirefighterGame extends JPanel {
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                        if (!gameOver) {
-                            rounds++; // Increment round counter
-                            if (rounds >= (10+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
-                           //     placeHumanInEmptyCell();
-                                humanAppeared = true;
-                            }
+                if (!gameOver) {
+                    rounds++; // Increment round counter
+                    if (rounds >= (5+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
+                        placeHumanInEmptyCell();
+                        humanAppeared = true;
+                        grid.setHumanPosition(humanX, humanY);
+                    }
                     if (fireAgentTurn) {
+                        // Tour de l'agent feu
                         fireAgent.move();
                         System.out.println("--------------Fire Agent Turn");
                         System.out.println("Feu : Score actuel = " + fireAgent.getScore());
                     } else {
+                        // Tour de l'agent pompier
                         System.out.println("//////////////Fire Fighter Agent Turn");
                         firefighterAgent.move();
                         System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
                     }
-                            if (humanAppeared) {
-                                System.out.println("Human appeared at (" + humanX + ", " + humanY + ")");
-                            }
+
+// Vérifier si un humain est apparu
+                    if (grid.isHumanAppeared()) {
+                        System.out.println("Human appeared on the grid!");
+
+                        grid.resetNotification(); // Réinitialiser l'état d'apparition
+                    }
+
+// Vérifier si le jeu est terminé après chaque action
                     checkGameOver();
+
+// Redessiner la grille après chaque action
                     repaint();
+
+// Inverser le tour pour la prochaine itération
                     fireAgentTurn = !fireAgentTurn;
+
                 }
             }
         });
         timer.start();
     }
-
     public static void main(String[] args) {
         FirefighterGame game = new FirefighterGame();
         game.playGame();

@@ -19,8 +19,58 @@ public class FireAgent extends Agent {
 
     @Override
     public void move() {
+
+        if (grid.isHumanAppeared()) {
+            System.out.println("FireAgent prioritizing the human.");
+            moveTowardsHuman(); // Déplacement exclusif vers l'humain
+            return; // Évite tout autre comportement
+        }
+
+
         moveFireTowardsNearestObjective();
     }
+
+
+    private void moveTowardsHuman() {
+        int[] humanPosition = grid.getHumanPosition();
+        if (humanPosition == null) {
+            System.out.println("Aucun humain trouvé sur la grille.");
+            return; // Aucun humain n'est apparu
+        }
+
+        // Déterminer la direction vers l'humain
+        Direction directionToHuman = determineDirectionTowardsObjective(humanPosition);
+        int nextX = x, nextY = y;
+
+        switch (directionToHuman) {
+            case UP -> nextY = Math.max(0, y - 1);
+            case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
+            case LEFT -> nextX = Math.max(0, x - 1);
+            case RIGHT -> nextX = Math.min(grid.getGridSize() - 1, x + 1);
+        }
+
+        // Vérifier si le déplacement est possible
+        if (canMoveTo(nextX, nextY)) {
+            updatePosition(nextX, nextY);
+        } else {
+            System.out.println("Fire blocked while moving towards the human at (" + x + ", " + y + ").");
+            jumpToRandomEmptyCell(); // Optionnel : Sauter à une cellule vide si bloqué
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void moveFireTowardsNearestObjective() {
         if (grid.getObjectives().isEmpty()) return;
@@ -87,11 +137,11 @@ public class FireAgent extends Agent {
             }
         }
 
-       
+
         return null;
     }
 
-   
+
     private boolean isValidCell(int x, int y, boolean[][] visited) {
         return x >= 0 && x < grid.getGridSize() &&
                 y >= 0 && y < grid.getGridSize() &&
@@ -192,3 +242,4 @@ public class FireAgent extends Agent {
     }
 
 }
+
