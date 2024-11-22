@@ -54,6 +54,7 @@ public class FireAgent extends Agent {
                 System.out.println("Fire moved to position (" + nextX + ", " + nextY + ").");
             } else {
                 System.out.println("Fire blocked at (" + nextX + ", " + nextY + ").");
+                jumpToRandomEmptyCell();
             }
         }
 

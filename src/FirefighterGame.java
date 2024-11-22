@@ -32,6 +32,7 @@ public class FirefighterGame extends JPanel {
     private final Image pauseIcon;
     private final Image playIcon;
     private final Image restartIcon;
+    boolean isPaused = false;
 
 
     public FirefighterGame() {
@@ -95,6 +96,27 @@ public class FirefighterGame extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.exit(0); // Exit the game
+            }
+        });
+        // Add functionality to the play button
+        playButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (isPaused) {
+                    gameTimer.start(); // Resume the game
+                    isPaused = false;
+                }
+            }
+        });
+
+// Add functionality to the pause button
+        pauseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPaused) {
+                    gameTimer.stop(); // Pause the game
+                    isPaused = true;
+                }
             }
         });
 
@@ -245,39 +267,35 @@ public class FirefighterGame extends JPanel {
         frame.pack();
         frame.setVisible(true);
 
-        Timer timer = new Timer(1000, new ActionListener() {
+        gameTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                        if (!gameOver) {
-                            rounds++; // Increment round counter
-                            roundsHuman++; // Increment rounds since human moved
+                if (!gameOver) {
+                    rounds++; // Increment round counter
+                    roundsHuman++; // Increment rounds since human moved
 
-                            if (rounds >= (12+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
-                                placeHumanInEmptyCell();
-                                humanAppeared = true;
+                    if (rounds >= (5 + (Math.random() * 5)) && humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
+                        placeHumanInEmptyCell();
+                        humanAppeared = true;
+                    }
 
-                            }
-
-
-                            if (roundsHuman >= 18 && humanAppeared) {
-                                placeHumanInEmptyCell();
-                                roundsHuman = 0;
-                            }
-                            roundsHuman++;
+                    if (roundsHuman >= 10 && humanAppeared) {
+                        placeHumanInEmptyCell();
+                        roundsHuman = 0;
+                    }
+                    roundsHuman++;
                     if (fireAgentTurn) {
                         System.out.println("--------------Fire Agent Turn");
-                        if(humanAppeared) {
+                        if (humanAppeared) {
                             fireAgent.moveHuman(humanX, humanY);
-
+                        } else {
+                            fireAgent.move();
+                            System.out.println("Feu : Score actuel = " + fireAgent.getScore());
                         }
-                        else {
-                        fireAgent.move();
-                        System.out.println("Feu : Score actuel = " + fireAgent.getScore()); }
                     } else {
                         System.out.println("//////////////Fire Fighter Agent Turn");
                         if (humanAppeared) {
                             firefighterAgent.moveHuman(humanX, humanY);
-
                         } else {
                             firefighterAgent.move();
                             System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
@@ -290,11 +308,10 @@ public class FirefighterGame extends JPanel {
                     repaint();
                     fireAgentTurn = !fireAgentTurn;
                 }
-
             }
         });
-        timer.start();
-    }
+        gameTimer.start(); // Start the game timer
+        }
 
     public static void main(String[] args) {
         FirefighterGame game = new FirefighterGame();
