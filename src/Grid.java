@@ -11,6 +11,9 @@ public class Grid {
     private final Random random;
     private List<Agent> agents = new ArrayList<>();
     private final boolean[][] humanGrid;
+    private boolean notifyAgents = false;
+    private boolean humanAppeared = false;
+    private int[] humanPosition = null;
 
     public Grid(int size, int objectivesCount) {
         this.gridSize = size;
@@ -24,6 +27,32 @@ public class Grid {
         initializeBarriers();
         initializeObjectives(objectivesCount);
     }
+    public boolean isHumanAppeared() {
+        return humanAppeared;
+    }
+
+    public void resetNotification() {
+        this.notifyAgents = false; // Réinitialise la notification après réaction
+    }
+
+
+    public int[] getHumanPosition() {
+        if (humanPosition == null) {
+            System.out.println("Aucun humain n'a été défini dans la grille.");
+            return null;
+        }
+        return humanPosition;
+    }
+
+
+    public void setHumanPosition(int x, int y) {
+        this.humanPosition = new int[]{x, y};
+        this.humanAppeared = true;
+        this.notifyAgents = true; // Notifie tous les agents
+        System.out.println("Human appeared at (" + x + ", " + y + ")");
+    }
+
+
 
     public int getGridSize() {
         return gridSize; // Return the grid size
@@ -108,7 +137,7 @@ public class Grid {
     }
 
 
-    }
+}
 
 
 
