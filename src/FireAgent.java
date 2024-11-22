@@ -22,7 +22,42 @@ public class FireAgent extends Agent {
         moveFireTowardsNearestObjective();
     }
 
-    private void moveFireTowardsNearestObjective() {
+
+    public void moveHuman(int humanX, int humanY) {
+            if (x == humanX && y == humanY) {
+                System.out.println("Fire already at the target position (" + humanX + ", " + humanY + ").");
+                return;
+            }
+
+            int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+            int minDistance = Integer.MAX_VALUE;
+            int nextX = x, nextY = y;
+            boolean[][] visited = new boolean[grid.getGridSize()][grid.getGridSize()];
+
+            // Check each direction
+            for (int[] dir : directions) {
+                int newX = x + dir[0];
+                int newY = y + dir[1];
+
+                if (isValidCell(newX, newY, visited)) {
+                    int distance = Math.abs(newX - humanX) + Math.abs(newY - humanY);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nextX = newX;
+                        nextY = newY;
+                    }
+                }
+            }
+
+            if (canMoveTo(nextX, nextY)) {
+                updatePosition(nextX, nextY);
+                System.out.println("Fire moved to position (" + nextX + ", " + nextY + ").");
+            } else {
+                System.out.println("Fire blocked at (" + nextX + ", " + nextY + ").");
+            }
+        }
+
+        private void moveFireTowardsNearestObjective() {
         if (grid.getObjectives().isEmpty()) return;
 
 
@@ -49,6 +84,8 @@ public class FireAgent extends Agent {
             jumpToRandomEmptyCell();
         }
     }
+
+
     private int[] findNearestObjective() {
         List<int[]> objectives = grid.getObjectives();
         if (objectives.isEmpty()) return null;
@@ -87,11 +124,11 @@ public class FireAgent extends Agent {
             }
         }
 
-       
+
         return null;
     }
 
-   
+
     private boolean isValidCell(int x, int y, boolean[][] visited) {
         return x >= 0 && x < grid.getGridSize() &&
                 y >= 0 && y < grid.getGridSize() &&

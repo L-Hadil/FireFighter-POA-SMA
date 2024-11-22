@@ -15,6 +15,7 @@ public class FirefighterGame extends JPanel {
     private final FireAgent fireAgent;
     private boolean gameOver = false;
     private String winnerMessage = "";
+    private Timer gameTimer;
 
     private final Image fireIcon;
     private final Image firefighterIcon;
@@ -25,6 +26,12 @@ public class FirefighterGame extends JPanel {
     private int humanY = -1; // Human's Y position
     private int rounds = 0; // Count rounds
     private boolean humanAppeared = false;
+    private                             int roundsHuman=0;
+    // Icons for buttons
+    private final Image exitIcon;
+    private final Image pauseIcon;
+    private final Image playIcon;
+    private final Image restartIcon;
 
 
     public FirefighterGame() {
@@ -53,6 +60,44 @@ public class FirefighterGame extends JPanel {
         firefighterIcon = new ImageIcon("assets/icons/img_1.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
         humanIcon = new ImageIcon("assets/icons/img_8.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
         barrierIcon = new ImageIcon("assets/icons/img_5.png").getImage().getScaledInstance(CELL_SIZE, CELL_SIZE, Image.SCALE_SMOOTH);
+
+        // Create control panel
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new FlowLayout());
+        // Load icons for control panel buttons
+        exitIcon = new ImageIcon("assets/icons/exit.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        pauseIcon = new ImageIcon("assets/icons/pause.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        playIcon = new ImageIcon("assets/icons/play.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        restartIcon = new ImageIcon("assets/icons/restart.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        // Create buttons and set icons
+        JButton playButton = new JButton(new ImageIcon(playIcon));
+        JButton pauseButton = new JButton(new ImageIcon(pauseIcon));
+        JButton restartButton = new JButton(new ImageIcon(restartIcon));
+        JButton exitButton = new JButton(new ImageIcon(exitIcon));
+
+        // Add buttons to control panel
+        controlPanel.add(playButton);
+        controlPanel.add(pauseButton);
+        controlPanel.add(restartButton);
+        controlPanel.add(exitButton);
+
+        // Create an empty space above the game grid using a JPanel
+        JPanel emptyZone = new JPanel();
+        emptyZone.setPreferredSize(new Dimension(GRID_SIZE * CELL_SIZE/2, 100)); // Empty zone height
+
+        // Add the empty zone to the top of the panel
+        add(emptyZone, BorderLayout.NORTH);
+
+        // Add the control panel below the empty zone
+        add(controlPanel, BorderLayout.SOUTH);
+
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0); // Exit the game
+            }
+        });
+
 /*
         // Create control panel
         JPanel controlPanel = new JPanel();
@@ -73,6 +118,7 @@ public class FirefighterGame extends JPanel {
         // Add the control panel to the top (after the empty zone)
         add(controlPanel, BorderLayout.LINE_END);
         */
+
     }
 
     @Override
@@ -97,8 +143,8 @@ public class FirefighterGame extends JPanel {
                 } else if (grid.isSafeAt(i, j)) {
                     g.setColor(Color.CYAN);
                 } else if (grid.isBarrierAt(i, j)) {
-                    g.setColor(new Color(80, 60, 70)); // Dark gray for barriers
-                    g.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE); // Draw dark gray background
+                   // g.setColor(new Color(80, 60, 70)); // Dark gray for barriers
+                   // g.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE); // Draw dark gray background
                     g.drawImage(barrierIcon, i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE, this);
                 } else {
                     g.setColor(Color.WHITE);
@@ -171,6 +217,7 @@ public class FirefighterGame extends JPanel {
             JOptionPane.showMessageDialog(this, winnerMessage, "Résultat de la Partie", JOptionPane.INFORMATION_MESSAGE);
 
         }
+
         // Optional: Check if a special condition (e.g., reaching the human) ends the game
         if ((firefighterAgent.getX() == humanX && firefighterAgent.getY() == humanY)) {
             winnerMessage = "Pompier a sauvé l'humain !";
@@ -187,6 +234,8 @@ public class FirefighterGame extends JPanel {
         }
 
 
+
+
     }
 
     public void playGame() {
@@ -201,26 +250,47 @@ public class FirefighterGame extends JPanel {
             public void actionPerformed(ActionEvent e) {
                         if (!gameOver) {
                             rounds++; // Increment round counter
-                            if (rounds >= (10+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
-                           //     placeHumanInEmptyCell();
+                            roundsHuman++; // Increment rounds since human moved
+
+                            if (rounds >= (12+(Math.random()*5))&& humanX == -1 && humanY == -1) { // Human appears after 5 and 10 rounds
+                                placeHumanInEmptyCell();
                                 humanAppeared = true;
+
                             }
+
+
+                            if (roundsHuman >= 18 && humanAppeared) {
+                                placeHumanInEmptyCell();
+                                roundsHuman = 0;
+                            }
+                            roundsHuman++;
                     if (fireAgentTurn) {
-                        fireAgent.move();
                         System.out.println("--------------Fire Agent Turn");
-                        System.out.println("Feu : Score actuel = " + fireAgent.getScore());
+                        if(humanAppeared) {
+                            fireAgent.moveHuman(humanX, humanY);
+
+                        }
+                        else {
+                        fireAgent.move();
+                        System.out.println("Feu : Score actuel = " + fireAgent.getScore()); }
                     } else {
                         System.out.println("//////////////Fire Fighter Agent Turn");
-                        firefighterAgent.move();
-                        System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
+                        if (humanAppeared) {
+                            firefighterAgent.moveHuman(humanX, humanY);
+
+                        } else {
+                            firefighterAgent.move();
+                            System.out.println("Pompier : Score actuel = " + firefighterAgent.getScore());
+                        }
+                        if (humanAppeared) {
+                            System.out.println("Human appeared at (" + humanX + ", " + humanY + ")");
+                        }
                     }
-                            if (humanAppeared) {
-                                System.out.println("Human appeared at (" + humanX + ", " + humanY + ")");
-                            }
                     checkGameOver();
                     repaint();
                     fireAgentTurn = !fireAgentTurn;
                 }
+
             }
         });
         timer.start();
