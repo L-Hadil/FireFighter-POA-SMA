@@ -68,6 +68,6 @@ Dans les deux versions, vous pouvez ajuster le nombre d'objectifs pour tester le
 ## Participants
 
 - Hadil LADJ
-- - Malik MANSOUR
+- Malik MANSOUR
 - Mohamed Aziz Belhaj Hassine
 
