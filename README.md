@@ -1,55 +1,73 @@
-# Firefighter Game
+# Firefighter vs Fire Agents Game
 
-Ce projet est un jeu simulant un scénario où un pompier doit protéger des objectifs contre le feu. Le jeu utilise Java et une structure orientée agent pour gérer les actions autonomes du pompier et du feu sur une grille.
+Ce projet a été réalisé dans le cadre du cours HAI716. Il s'agit d'un jeu simulant un scénario où un agent pompier doit protéger des objectifs contre un agent feu dans un environnement dynamique ou statique.
 
-## Configuration des Objectifs : Tester le Jeu avec un Nombre Variable d’Objectifs
+## Versions du Projet
 
-Pour tester le comportement des agents et ajuster la difficulté du jeu, il est possible de modifier le nombre d'objectifs. Cette configuration permet d’expérimenter différentes stratégies et d’observer l’efficacité des agents dans divers scénarios.
+1. **Version avec Environnement Statique**
+   - **Branche :** `statique`
+   - Cette version simule un environnement où les obstacles et les objectifs sont fixes et ne changent pas au cours de la simulation.
+   - **Exécution :** La classe principale est `FirefighterGame`. Pour lancer le jeu, suivez les étapes ci-dessous.
+
+2. **Version avec Environnement Dynamique (Version Finale)**
+   - **Branche :** `main`
+   - Cette version introduit un environnement dynamique avec des éléments évolutifs, dont un objectif spécial **"Humain"** :
+      - Un objectif "Humain" apparaît au bout de certains temps ou tours de jeu, ajoutant un défi supplémentaire.
+      - Les agents (pompier et feu) doivent adapter leur stratégie en fonction de cet objectif dynamique.
+   - **Exécution :** La classe principale reste `FirefighterGame`. Les étapes d'exécution sont les mêmes que pour la version statique.
+
+## Présentation du Projet
+
+Un fichier PDF nommé **`Presentation.pdf`** est disponible dans le dépôt. Ce document contient une présentation détaillée du projet, incluant les objectifs, les fonctionnalités et les particularités des deux versions.
 
 ## Prérequis
-- Java SDK 17
+
+- Java SDK 17 installé sur votre machine.
 
 ## Installation et Exécution
+
 1. Clonez le dépôt GitHub :
    ```bash
    git clone https://github.com/L-Hadil/FireFighter-POA-SMA
    ```
-2. Compilez le code :
+
+2. Accédez à la branche souhaitée :
+   - Pour la version statique :
+     ```bash
+     git checkout statique
+     ```
+   - Pour la version dynamique (par défaut) :
+     ```bash
+     git checkout main
+     ```
+
+3. Compilez la classe principale :
    ```bash
    javac FirefighterGame.java
    ```
-3. Exécutez le jeu :
+
+4. Exécutez le jeu :
    ```bash
    java FirefighterGame
    ```
 
-### Instructions pour Modifier le Nombre d'Objectifs
-1. **Ouvrez la Classe `FirefighterGame`**  
-   Dans votre éditeur, ouvrez le fichier `FirefighterGame.java`.
+## Instructions pour Modifier le Nombre d'Objectifs
 
-2. **Modifiez la Constante `OBJECTIVES_COUNT`**  
-   Trouvez la ligne suivante dans la classe :
+Dans les deux versions, vous pouvez ajuster le nombre d'objectifs pour tester le comportement des agents. Voici comment faire :
+
+1. **Ouvrez la Classe `FirefighterGame`**  
+   Modifiez la constante `OBJECTIVES_COUNT` :
    ```java
    private static final int OBJECTIVES_COUNT = 10;
    ```
-   Remplacez `10` par le nombre d'objectifs souhaité, par exemple :
-   ```java
-   private static final int OBJECTIVES_COUNT = 15;
-   ```
+   Changez la valeur pour refléter le nombre d'objectifs souhaité.
 
-3. **Recompilez le Code**  
-   Enregistrez vos modifications et recompilez le projet :
-   ```bash
-   javac FirefighterGame.java
-   ```
-
-4. **Exécutez le Jeu**  
-   Lancez le jeu pour observer le comportement des agents avec le nouveau nombre d'objectifs :
-   ```bash
-   java FirefighterGame
-   ```
+2. **Recompilez et Exécutez le Code** :
+   Suivez les étapes d'exécution pour observer les changements.
 
 ## Participants
+
 - Hadil LADJ
+- - Malik MANSOUR
 - Mohamed Aziz Belhaj Hassine
-- Malik MANSOUR
+
