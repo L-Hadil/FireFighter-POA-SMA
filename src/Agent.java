@@ -15,5 +15,5 @@ public abstract class Agent {
         return y;
     }
 
-    public abstract void move(); // Méthode abstraite à implémenter dans les sous-classes
+    public abstract void move();
 }

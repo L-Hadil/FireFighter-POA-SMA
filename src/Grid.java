@@ -75,17 +75,12 @@ public class Grid {
         return objectives;  // Returns the list of objectives
     }
 
-    public void removeObjective(int x, int y) {
-        objectives.removeIf(obj -> obj[0] == x && obj[1] == y);  // Remove the objective at the given coordinates
-    }
 
     public boolean hasObjectives() {
         return !objectives.isEmpty();  // Returns true if there are still objectives left
 
     }
-    public boolean isEmpty(int x, int y) {
-        return !isFireAt(x, y) && !isSafeAt(x, y) && !isBarrierAt(x, y);
-    }
+
     public boolean isObjectiveAt(int x, int y) {
         for (int[] objective : objectives) {
             if (objective[0] == x && objective[1] == y) {
