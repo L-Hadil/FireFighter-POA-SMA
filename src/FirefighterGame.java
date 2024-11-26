@@ -120,26 +120,7 @@ public class FirefighterGame extends JPanel {
             }
         });
 
-/*
-        // Create control panel
-        JPanel controlPanel = new JPanel();
-        JButton startButton = new JButton("Start Game");
-        JButton pauseButton = new JButton("Pause");
 
-        // Add buttons to control panel
-        controlPanel.add(startButton);
-        controlPanel.add(pauseButton);
-
-        // Create an empty space above the game grid using a JPanel
-        JPanel emptyZone = new JPanel();
-        emptyZone.setPreferredSize(new Dimension(GRID_SIZE * CELL_SIZE, 50)); // Empty zone height
-
-        // Add the empty zone to the top of the panel
-        add(emptyZone, BorderLayout.LINE_END);
-
-        // Add the control panel to the top (after the empty zone)
-        add(controlPanel, BorderLayout.LINE_END);
-        */
 
     }
 

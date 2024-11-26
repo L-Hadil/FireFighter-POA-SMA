@@ -30,7 +30,7 @@ public class Grid {
     }
 
     private void initializeBarriers() {
-        for (int i = 0; i < 5; i++) { // Example for placing 5 barriers
+        for (int i = 0; i < 5; i++) {
             int barrierX = random.nextInt(gridSize);
             int barrierY = random.nextInt(gridSize);
             barrierGrid[barrierX][barrierY] = true;

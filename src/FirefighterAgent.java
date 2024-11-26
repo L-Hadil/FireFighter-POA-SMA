@@ -17,10 +17,10 @@ public class FirefighterAgent extends Agent {
     @Override
     public void move() {
         if (objectives.isEmpty()) {
-            return; // No objectives left to save
+            return;
         }
 
-        // Find the closest objective using Manhattan distance
+
         int[] closestObjective = findClosestObjective();
 
         // Determine the direction to move towards the closest objective
@@ -104,18 +104,6 @@ public class FirefighterAgent extends Agent {
         }
 
 
-
-
-    private Direction determineDirectionHuman( int targetX, int targetY) {
-            if (x < targetX && y < targetY) return Direction.DOWN_RIGHT;
-            if (x < targetX && y > targetY) return Direction.UP_RIGHT;
-            if (x > targetX && y < targetY) return Direction.DOWN_LEFT;
-            if (x > targetX && y > targetY) return Direction.UP_LEFT;
-            if (x < targetX) return Direction.RIGHT;
-            if (x > targetX) return Direction.LEFT;
-            if (y < targetY) return Direction.DOWN;
-            return Direction.UP;
-        }
 
 
 
