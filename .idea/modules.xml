@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FireFighter_SOA_SMA.iml" filepath="$PROJECT_DIR$/FireFighter_SOA_SMA.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FireFighter-POA-SMA.iml" filepath="$PROJECT_DIR$/.idea/modules/FireFighter-POA-SMA.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FireFighter-POA-SMA.main.iml" filepath="$PROJECT_DIR$/.idea/modules/FireFighter-POA-SMA.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FireFighter-POA-SMA.test.iml" filepath="$PROJECT_DIR$/.idea/modules/FireFighter-POA-SMA.test.iml" />
     </modules>
   </component>
 </project>

@@ -1,75 +1,34 @@
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
-import java.util.Random;
 
 public class FireAgent extends Agent {
     private final Grid grid;
-    private final int objectivesCount; // Total number of objectives
-    private int score; // Fire's score
-    private final Random random;
+    private final int objectivesCount;
+    private Direction fireDirection;
+    private int score;
 
     public FireAgent(int startX, int startY, Grid grid, int objectivesCount) {
         super(startX, startY);
         this.grid = grid;
         this.objectivesCount = objectivesCount;
+        this.fireDirection = Direction.UP;
         this.score = 0;
-        this.random = new Random();
     }
 
     @Override
     public void move() {
-        moveFireTowardsNearestObjective();
+        moveFireTowardsObjective();
     }
 
-
-    public void moveHuman(int humanX, int humanY) {
-            if (x == humanX && y == humanY) {
-                System.out.println("Fire already at the target position (" + humanX + ", " + humanY + ").");
-                return;
-            }
-
-            int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-            int minDistance = Integer.MAX_VALUE;
-            int nextX = x, nextY = y;
-            boolean[][] visited = new boolean[grid.getGridSize()][grid.getGridSize()];
-
-            // Check each direction
-            for (int[] dir : directions) {
-                int newX = x + dir[0];
-                int newY = y + dir[1];
-
-                if (isValidCell(newX, newY, visited)) {
-                    int distance = Math.abs(newX - humanX) + Math.abs(newY - humanY);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        nextX = newX;
-                        nextY = newY;
-                    }
-                }
-            }
-
-            if (canMoveTo(nextX, nextY)) {
-                updatePosition(nextX, nextY);
-                System.out.println("Fire moved to position (" + nextX + ", " + nextY + ").");
-            } else {
-                System.out.println("Fire blocked at (" + nextX + ", " + nextY + ").");
-                jumpToRandomEmptyCell();
-            }
-        }
-
-        private void moveFireTowardsNearestObjective() {
+    private void moveFireTowardsObjective() {
         if (grid.getObjectives().isEmpty()) return;
 
+        int[] targetObjective = grid.getObjectives().get(0);
+        fireDirection = determineDirectionTowardsObjectives();
 
-        int[] targetObjective = findNearestObjective();
-        if (targetObjective == null) return;
-
-
-        Direction fireDirection = determineDirectionTowardsObjective(targetObjective);
         int nextX = x, nextY = y;
+        boolean moved = false;
 
-
+        // Attempt to move in the determined direction
         switch (fireDirection) {
             case UP -> nextY = Math.max(0, y - 1);
             case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
@@ -77,72 +36,33 @@ public class FireAgent extends Agent {
             case RIGHT -> nextX = Math.min(grid.getGridSize() - 1, x + 1);
         }
 
-
         if (canMoveTo(nextX, nextY)) {
             updatePosition(nextX, nextY);
+            moved = true;
         } else {
-            System.out.println("Fire blocked at position (" + x + ", " + y + ") by all directions.");
-            jumpToRandomEmptyCell();
-        }
-    }
+            // Try all other directions if the main one is blocked
+            for (Direction dir : Direction.values()) {
+                nextX = x;
+                nextY = y;
 
+                switch (dir) {
+                    case UP -> nextY = Math.max(0, y - 1);
+                    case DOWN -> nextY = Math.min(grid.getGridSize() - 1, y + 1);
+                    case LEFT -> nextX = Math.max(0, x - 1);
+                    case RIGHT -> nextX = Math.min(grid.getGridSize() - 1, x + 1);
+                }
 
-    private int[] findNearestObjective() {
-        List<int[]> objectives = grid.getObjectives();
-        if (objectives.isEmpty()) return null;
-
-        int gridSize = grid.getGridSize();
-        boolean[][] visited = new boolean[gridSize][gridSize];
-        Queue<int[]> queue = new LinkedList<>();
-
-        // Start BFS from the current position of the fire agent
-        queue.offer(new int[]{x, y, 0}); // {currentX, currentY, distance}
-        visited[x][y] = true;
-
-        while (!queue.isEmpty()) {
-            int[] current = queue.poll();
-            int curX = current[0];
-            int curY = current[1];
-            int distance = current[2];
-
-            // Check if this cell is an objective
-            for (int[] objective : objectives) {
-                if (curX == objective[0] && curY == objective[1]) {
-                    return new int[]{curX, curY};
+                if (canMoveTo(nextX, nextY)) {
+                    updatePosition(nextX, nextY);
+                    moved = true;
+                    break;
                 }
             }
 
-            // Explore neighbors (up, down, left, right)
-            int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-            for (int[] dir : directions) {
-                int newX = curX + dir[0];
-                int newY = curY + dir[1];
-
-                if (isValidCell(newX, newY, visited)) {
-                    queue.offer(new int[]{newX, newY, distance + 1});
-                    visited[newX][newY] = true;
-                }
+            if (!moved) {
+                System.out.println("Feu bloqué à la position (" + x + ", " + y + ") par toutes les directions.");
             }
         }
-
-
-        return null;
-    }
-
-
-    private boolean isValidCell(int x, int y, boolean[][] visited) {
-        return x >= 0 && x < grid.getGridSize() &&
-                y >= 0 && y < grid.getGridSize() &&
-                !visited[x][y] &&
-                !grid.isBarrierAt(x, y); // Ensure cell is not a barrier
-    }
-
-    private Direction determineDirectionTowardsObjective(int[] target) {
-        if (x < target[0]) return Direction.RIGHT;
-        if (x > target[0]) return Direction.LEFT;
-        if (y < target[1]) return Direction.DOWN;
-        if (y > target[1]) return Direction.UP;
-        return null; // Target reached
     }
 
     private boolean canMoveTo(int nextX, int nextY) {
@@ -152,11 +72,23 @@ public class FireAgent extends Agent {
     private void updatePosition(int nextX, int nextY) {
         x = nextX;
         y = nextY;
-        grid.setFireAt(x, y, true);
+        grid.setFireAt(x, y, true); // Mark the current position as on fire
+
         burnObjective();
         propagateFireToNeighbors();
     }
 
+    private Direction determineDirectionTowardsObjectives() {
+        List<int[]> objectives = grid.getObjectives();
+        if (!objectives.isEmpty()) {
+            int[] target = objectives.get(0);
+            if (x < target[0]) return Direction.RIGHT;
+            if (x > target[0]) return Direction.LEFT;
+            if (y < target[1]) return Direction.DOWN;
+            if (y > target[1]) return Direction.UP;
+        }
+        return Direction.values()[(int) (Math.random() * Direction.values().length)];
+    }
 
     // Method to propagate fire to neighboring cells
     private void propagateFireToNeighbors() {
@@ -194,12 +126,6 @@ public class FireAgent extends Agent {
             }
             return false;
         });
-
-        if(grid.isHumanAt(x,y)){
-            System.out.println("L'humain a été brûlé à la position (" + x + ", " + y + ")");
-            score=score+10;
-        }
-
     }
 
     private void burnObjective() {
@@ -209,24 +135,4 @@ public class FireAgent extends Agent {
     public int getScore() {
         return score;
     }
-
-    private void jumpToRandomEmptyCell() {
-        int gridSize = grid.getGridSize();
-        int randomX, randomY;
-
-        // Try a number of random positions until an empty cell is found
-        for (int i = 0; i < 10; i++) {  // Limit the number of attempts to avoid infinite loops
-            randomX = random.nextInt(gridSize);
-            randomY = random.nextInt(gridSize);
-
-            if (canMoveTo(randomX, randomY)) {
-                updatePosition(randomX, randomY);
-                System.out.println("Fire jumped to random empty cell at (" + randomX + ", " + randomY + ")");
-                return;
-            }
-        }
-
-        System.out.println("Unable to jump to a random empty cell after 10 attempts.");
-    }
-
 }
