@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 public class Grid {
     private final int gridSize;
     private final boolean[][] fireGrid;    // Grille des incendies
@@ -8,6 +9,8 @@ public class Grid {
     private final boolean[][] barrierGrid;  // Grille des barrières(les cases grise)
     private final List<int[]> objectives;   // Liste des objectifs(les cases vertes)
     private final Random random;
+    private List<Agent> agents = new ArrayList<>();
+    private final boolean[][] humanGrid;
 
     public Grid(int size, int objectivesCount) {
         this.gridSize = size;
@@ -16,6 +19,7 @@ public class Grid {
         this.barrierGrid = new boolean[size][size];
         this.objectives = new ArrayList<>();
         this.random = new Random();
+        this.humanGrid= new boolean[size][size];
 
         initializeBarriers();
         initializeObjectives(objectivesCount);
@@ -56,26 +60,56 @@ public class Grid {
     }
 
     public boolean isSafeAt(int x, int y) {
-        return safeGrid[x][y];
+        return safeGrid[x][y];  // Returns whether the cell is safe
     }
 
     public void setSafeAt(int x, int y) {
-        safeGrid[x][y] = true;
+        safeGrid[x][y] = true;  // Mark the cell as safe
     }
 
     public boolean isBarrierAt(int x, int y) {
-        return barrierGrid[x][y];
+        return barrierGrid[x][y];  // Returns whether there is a barrier at the given cell
     }
 
     public List<int[]> getObjectives() {
-        return objectives;
+        return objectives;  // Returns the list of objectives
     }
 
     public void removeObjective(int x, int y) {
-        objectives.removeIf(obj -> obj[0] == x && obj[1] == y);
+        objectives.removeIf(obj -> obj[0] == x && obj[1] == y);  // Remove the objective at the given coordinates
     }
 
     public boolean hasObjectives() {
-        return !objectives.isEmpty();
+        return !objectives.isEmpty();  // Returns true if there are still objectives left
+
     }
-}
+    public boolean isEmpty(int x, int y) {
+        return !isFireAt(x, y) && !isSafeAt(x, y) && !isBarrierAt(x, y);
+    }
+    public boolean isObjectiveAt(int x, int y) {
+        for (int[] objective : objectives) {
+            if (objective[0] == x && objective[1] == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isAgentAt(int x, int y) {
+        for (Agent agent : agents) {
+            if (agent.getX() == x && agent.getY() == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean isHumanAt(int x, int y) {
+        return humanGrid[x][y];
+    }
+
+
+    }
+
+
+
+
